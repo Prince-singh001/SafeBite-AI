@@ -6,3 +6,9 @@ matplotlib
 flask
 scikit-learn
 pillow
+flask
+gunicorn
+tensorflow
+opencv-python-headless
+numpy
+werkzeug
