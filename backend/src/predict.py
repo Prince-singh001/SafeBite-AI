@@ -13,7 +13,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 MODEL_PATH = os.path.join(
     BASE_DIR,
-    "../models/safebite_model_fixed.keras"
+    "../models/safebite_mobilenetv2_model.h5"
 )
 
 CLASS_PATH = os.path.join(
