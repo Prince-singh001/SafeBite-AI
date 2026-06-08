@@ -14,7 +14,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 MODEL_PATH = os.path.join(BASE_DIR, "../models/safebite_mobilenetv2_model.h5")
 CLASS_PATH = os.path.join(BASE_DIR, "../models/class_indices.json")
 
-model = tensorflow.keras.models.load_model(MODEL_PATH)
+model = tensorflow.keras.models.load_model(MODEL_PATH, compile=False)
 
 with open(CLASS_PATH, "r") as f:
     class_indices = json.load(f)
