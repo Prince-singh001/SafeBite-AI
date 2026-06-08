@@ -1,6 +1,7 @@
 Flask==3.0.3
 gunicorn==22.0.0
 tensorflow==2.21.0
+keras>=3.14.1
 opencv-python-headless==4.10.0.84
 numpy
 matplotlib
