@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>SafeBite AI | Food Scanner</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🥗</text></svg>">
+
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/style.css') }}"
+    />
+  </head>
+
+  <body>
+    {% include 'components/navbar.html' %}
+
+    <!-- Hero -->
+
+    <section class="scan-hero">
+      <div class="hero-text">
+        <span class="badge">AI Powered Food Detection</span>
+
+        <h1>Detect Food Freshness Using Deep Learning</h1>
+
+        <p>
+          Upload a fruit, vegetable or food image. SafeBite AI will identify the
+          food item, freshness condition and confidence score.
+        </p>
+      </div>
+
+      <div class="hero-img">
+        <img
+          src="{{ url_for('static', filename='image/home_hero_scan.png') }}"
+          alt="Food Scanner"
+        />
+      </div>
+    </section>
+
+    <!-- Scan Tabs -->
+
+    <section class="scan-tabs">
+      <button class="tab-btn active" data-type="fruit" type="button">
+        🍎 Fruit Scan
+      </button>
+
+      <button class="tab-btn" data-type="vegetable" type="button">
+        🥦 Vegetable Scan
+      </button>
+
+      <button class="tab-btn" data-type="food" type="button">
+        🍱 Food Scan
+      </button>
+    </section>
+
+    <!-- Main Scan Area -->
+
+    <section class="scan-box">
+      <!-- Upload Card -->
+
+      <div class="upload-card">
+        <h2 id="scanTitle">Fruit Freshness Scan</h2>
+
+        <p id="scanDesc">Upload fruit image like apple, banana or orange.</p>
+
+        <label for="foodImage" class="upload-area" id="uploadArea">
+          <input type="file" id="foodImage" accept="image/*" hidden />
+
+          <div id="previewBox">
+            <span class="upload-icon"> 📷 </span>
+
+            <h3>Click To Upload Image</h3>
+
+            <p>JPG • JPEG • PNG • WEBP</p>
+          </div>
+
+          <div class="upload-scanner-line" id="uploadScannerLine" style="display: none;"></div>
+        </label>
+
+        <!-- Camera Area -->
+        <div id="cameraArea" class="camera-card-preview" style="display: none;">
+          <div class="scanner-viewfinder">
+            <span class="corner top-left"></span>
+            <span class="corner top-right"></span>
+            <span class="corner bottom-left"></span>
+            <span class="corner bottom-right"></span>
+            <div class="scanner-line"></div>
+          </div>
+          <video id="webcam" autoplay playsinline></video>
+          <button type="button" class="capture-btn" id="captureImage">
+            📷 Capture Image
+          </button>
+        </div>
+
+        <!-- Buttons -->
+
+        <div class="scan-actions">
+          <button class="scan-btn" id="scanNow" type="button">
+            🔍 Analyze Image
+          </button>
+
+          <button class="live-btn" id="liveScan" type="button">
+            📸 Live Scan
+          </button>
+
+          <button class="reset-btn" id="resetScan" type="button">
+            🔄 Reload Scan
+          </button>
+        </div>
+
+        <!-- Sample Images Section -->
+        <div class="sample-images-section">
+          <p class="sample-title">⚡ Try these sample images:</p>
+          <div class="sample-buttons">
+            <button class="sample-btn" data-image="/static/image/apple.jpg" data-type="fruit" type="button">
+              🍎 Fresh Apple
+            </button>
+            <button class="sample-btn" data-image="/static/image/spoiled_pizza.jpg" data-type="food" type="button">
+              🍕 Spoiled Pizza
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Result Card -->
+
+      <div class="result-card">
+        <span class="badge"> AI Prediction Result </span>
+
+        <h2>Scan Results</h2>
+
+        <div class="result-row">
+          <span>Selected Category</span>
+          <strong id="resultSelectedCategory"> Fruit </strong>
+        </div>
+
+        <div class="result-row">
+          <span>Detected Category</span>
+          <strong id="resultDetectedCategory"> Waiting... </strong>
+        </div>
+
+        <div class="result-row">
+          <span>Food Name</span>
+          <strong id="foodName"> Waiting... </strong>
+        </div>
+
+        <div class="result-row">
+          <span>Freshness Status</span>
+          <strong class="fresh" id="resultStatus"> Waiting... </strong>
+        </div>
+
+        <div class="result-row">
+          <span>Confidence Score</span>
+          <strong id="resultConfidence"> --% </strong>
+        </div>
+
+        <div class="warning-box" id="categoryWarningBox" style="display: none;">
+          <span class="warning-icon">⚠️</span>
+          <span id="categoryWarningMessage"></span>
+        </div>
+
+        <p class="note" id="resultMessage">
+          Upload an image and click Analyze Image.
+        </p>
+
+        <!-- Feedback Section -->
+        <div class="feedback-section" id="feedbackSection" style="display: none;">
+          <p>Is this prediction correct?</p>
+          <div class="feedback-actions">
+            <button class="feedback-btn yes-btn" id="feedbackYes" type="button">👍 Yes</button>
+            <button class="feedback-btn no-btn" id="feedbackNo" type="button">👎 No</button>
+          </div>
+        </div>
+
+        <!-- Correction Section -->
+        <div class="correction-section" id="correctionSection" style="display: none;">
+          <p>Help us improve! What is the correct label?</p>
+          <div class="correction-row">
+            <select id="correctionLabelSelect">
+              <option value="" disabled selected>Select Item</option>
+              <optgroup label="Fruits">
+                <option value="apples">Apple</option>
+                <option value="banana">Banana</option>
+                <option value="oranges">Orange</option>
+                <option value="mango">Mango</option>
+              </optgroup>
+              <optgroup label="Vegetables">
+                <option value="tomato">Tomato</option>
+                <option value="potato">Potato</option>
+                <option value="cucumber">Cucumber</option>
+                <option value="bittergroud">Bitter Gourd</option>
+              </optgroup>
+              <optgroup label="Food">
+                <option value="pizza">Pizza</option>
+                <option value="burger">Burger</option>
+                <option value="sandwich">Sandwich</option>
+                <option value="pasta">Pasta</option>
+                <option value="rice">Rice</option>
+                <option value="bread">Bread</option>
+              </optgroup>
+            </select>
+            <select id="correctionConditionSelect">
+              <option value="" disabled selected>Select Condition</option>
+              <option value="fresh">Fresh</option>
+              <option value="spoiled">Spoiled</option>
+            </select>
+          </div>
+          <button class="submit-correction-btn" id="submitCorrection" type="button">Submit & Retrain</button>
+        </div>
+
+        <!-- Training Status -->
+        <div class="training-status" id="trainingStatus" style="display: none;">
+          <span class="spinner">⏳</span>
+          <span id="trainingStatusText">Retraining model...</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Features -->
+
+    <section class="info-section">
+      <div class="info-card">
+        <h3>🍎 Fruit Detection</h3>
+        <p>Apple, Banana, Orange detection with freshness prediction.</p>
+      </div>
+
+      <div class="info-card">
+        <h3>🥦 Vegetable Detection</h3>
+        <p>Tomato, Potato, Cucumber and Bitter Gourd detection.</p>
+      </div>
+
+      <div class="info-card">
+        <h3>🤖 Deep Learning Model</h3>
+        <p>
+          MobileNetV2 based CNN model trained on fresh and spoiled datasets.
+        </p>
+      </div>
+    </section>
+
+    {% include 'components/footer.html' %}
+
+    <script src="{{ url_for('static',
+filename='js/scan.js') }}"></script>
+  </body>
+</html>

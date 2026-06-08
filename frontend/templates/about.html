@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>About | SafeBite AI</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🥗</text></svg>">
+
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/style.css') }}"
+    />
+  </head>
+
+  <body>
+    {% include 'components/navbar.html' %}
+
+    <section class="hero">
+      <div class="hero-content">
+        <span class="badge">About SafeBite AI</span>
+
+        <h1>AI Powered Food Freshness Detection</h1>
+
+        <p>
+          SafeBite AI is an intelligent food quality analysis system developed
+          using Deep Learning, MobileNetV2, OpenCV and Image Processing
+          technologies.
+        </p>
+      </div>
+
+      <div class="hero-image">
+        <img
+          src="https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=1200&q=80"
+        />
+      </div>
+    </section>
+
+    <section class="about-section">
+      <div class="card">
+        <h2>🎯 Problem Statement</h2>
+
+        <p>
+          Food spoilage causes health risks, food wastage and financial losses.
+          Traditional inspection methods are slow and depend heavily on human
+          observation.
+        </p>
+      </div>
+
+      <div class="card">
+        <h2>💡 Proposed Solution</h2>
+
+        <p>
+          SafeBite AI uses image-based deep learning models to identify food
+          items and determine whether they are fresh or spoiled.
+        </p>
+      </div>
+
+      <div class="card">
+        <h2>🚀 Project Goal</h2>
+
+        <p>
+          To provide a fast, accurate and user-friendly food freshness detection
+          platform accessible through a modern web application.
+        </p>
+      </div>
+    </section>
+
+    <section class="tech-stack">
+      <h2>Technology Stack</h2>
+
+      <div class="stack-grid">
+        <div class="stack-card">Python</div>
+        <div class="stack-card">Flask</div>
+        <div class="stack-card">TensorFlow</div>
+        <div class="stack-card">Keras</div>
+        <div class="stack-card">OpenCV</div>
+        <div class="stack-card">MobileNetV2</div>
+        <div class="stack-card">HTML</div>
+        <div class="stack-card">CSS</div>
+        <div class="stack-card">JavaScript</div>
+      </div>
+    </section>
+
+    <section class="dataset-section">
+      <h2>Supported Food Classes</h2>
+
+      <div class="food-tags">
+        <span>🍎 Apple</span>
+        <span>🍌 Banana</span>
+        <span>🍊 Orange</span>
+        <span>🍅 Tomato</span>
+        <span>🥔 Potato</span>
+        <span>🥒 Cucumber</span>
+        <span>🥬 Bitter Gourd</span>
+      </div>
+    </section>
+
+    <section class="team-section">
+      <div class="section-heading">
+        <span class="badge">Our Team</span>
+        <h2>Meet The Developers</h2>
+        <p>The minds behind SafeBite AI, passionate about food safety and deep learning.</p>
+      </div>
+
+      <div class="team-grid">
+        <div class="team-card">
+          <div class="team-img-wrapper">
+            <img src="{{ url_for('static', filename='image/me.jpeg') }}" alt="Prince Singh" />
+          </div>
+          <h3>Prince Singh</h3>
+          <p class="role">AI Research & Backend Lead</p>
+          <p class="bio">
+            Specializes in training Convolutional Neural Networks and deploying lightweight models like MobileNetV2. Passionate about computer vision applications in food safety.
+          </p>
+        </div>
+
+        <div class="team-card">
+          <div class="team-img-wrapper">
+            <img src="{{ url_for('static', filename='image/rishabh.jpeg') }}" alt="Rishabh Vishwakarma" />
+          </div>
+          <h3>Rishabh Vishwakarma</h3>
+          <p class="role">UX Designer & Full Stack Developer</p>
+          <p class="bio">
+            Focuses on building intuitive, clean, and interactive user interfaces. Enthusiastic about creating seamless responsive experiences and integrating AI predictions into real-world web products.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    {% include 'components/footer.html' %}
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+  </body>
+</html>

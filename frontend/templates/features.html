@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Features | SafeBite AI</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🥗</text></svg>">
+
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/style.css') }}"
+    />
+  </head>
+
+  <body>
+    {% include 'components/navbar.html' %}
+
+    <section class="hero">
+      <div class="hero-text">
+        <span class="badge">SafeBite AI Features</span>
+        <h1>Smart Food Freshness Detection System</h1>
+        <p>
+          SafeBite AI uses image processing and deep learning to identify food
+          items, detect freshness condition and show confidence score instantly.
+        </p>
+
+        <div class="hero-actions">
+          <a href="{{ url_for('scan') }}?type=fruit" class="btn primary"
+            >Start Scan</a
+          >
+          <a href="{{ url_for('about') }}" class="btn secondary">Learn More</a>
+        </div>
+      </div>
+
+      <div class="hero-card">
+        <img
+          src="{{ url_for('static', filename='image/home_hero_scan.png') }}"
+          alt="SafeBite AI features"
+        />
+
+        <div class="live-result">
+          <div>
+            <span>Detected</span>
+            <strong>Apple</strong>
+          </div>
+          <div>
+            <span>Status</span>
+            <strong class="fresh">Fresh ✅</strong>
+          </div>
+          <div>
+            <span>Confidence</span>
+            <strong>96.4%</strong>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="features-section">
+      <div class="section-heading">
+        <span class="badge">Core Features</span>
+        <h2>Everything Your Food Scanner Needs</h2>
+        <p>
+          Professional features designed for a modern AI food freshness project.
+        </p>
+      </div>
+
+      <div class="feature-grid">
+        <div class="feature-card">
+          <div class="icon">🧠</div>
+          <h3>CNN Model</h3>
+          <p>
+            MobileNetV2 based CNN model trained for food freshness
+            classification.
+          </p>
+        </div>
+
+        <div class="feature-card">
+          <div class="icon">📷</div>
+          <h3>Image Upload</h3>
+          <p>Users can upload JPG, PNG, JPEG and WEBP food images directly.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="icon">⚡</div>
+          <h3>Instant Prediction</h3>
+          <p>Shows food name, freshness status and confidence score quickly.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="icon">🍎</div>
+          <h3>Fruit Detection</h3>
+          <p>
+            Supports apple, banana, orange and other fruit freshness scanning.
+          </p>
+        </div>
+
+        <div class="feature-card">
+          <div class="icon">🥦</div>
+          <h3>Vegetable Detection</h3>
+          <p>Supports tomato, potato, cucumber and bitter gourd detection.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="icon">📊</div>
+          <h3>Confidence Score</h3>
+          <p>
+            Displays model confidence percentage for better result
+            understanding.
+          </p>
+        </div>
+
+        <div class="feature-card">
+          <div class="icon">🌙</div>
+          <h3>Dark Mode</h3>
+          <p>Modern light and dark theme support for better user experience.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="icon">🔄</div>
+          <h3>Reload Scan</h3>
+          <p>Reset uploaded image and scan result easily with one click.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="tech-section">
+      <div class="section-heading">
+        <span class="badge">Technology Stack</span>
+        <h2>Built With Modern AI Tools</h2>
+      </div>
+
+      <div class="tech-grid">
+        <div class="tech-card">Python</div>
+        <div class="tech-card">Flask</div>
+        <div class="tech-card">TensorFlow</div>
+        <div class="tech-card">Keras</div>
+        <div class="tech-card">MobileNetV2</div>
+        <div class="tech-card">OpenCV</div>
+        <div class="tech-card">HTML</div>
+        <div class="tech-card">CSS</div>
+        <div class="tech-card">JavaScript</div>
+      </div>
+    </section>
+
+    <section class="workflow-section">
+      <div class="section-heading">
+        <span class="badge">Workflow</span>
+        <h2>How SafeBite AI Works</h2>
+      </div>
+
+      <div class="workflow-grid">
+        <div class="workflow-card">
+          <span>01</span>
+          <h3>Choose Scan Type</h3>
+          <p>
+            Select fruit, vegetable or food scan from the dropdown or scan tabs.
+          </p>
+        </div>
+
+        <div class="workflow-card">
+          <span>02</span>
+          <h3>Upload Image</h3>
+          <p>User uploads the food image from device storage.</p>
+        </div>
+
+        <div class="workflow-card">
+          <span>03</span>
+          <h3>Model Prediction</h3>
+          <p>Backend sends image to trained CNN model for prediction.</p>
+        </div>
+
+        <div class="workflow-card">
+          <span>04</span>
+          <h3>Show Result</h3>
+          <p>System displays food name, status and confidence score.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="support-section">
+      <div class="section-heading">
+        <span class="badge">Supported Classes</span>
+        <h2>Food Items Supported By Current Model</h2>
+      </div>
+
+      <div class="food-tags">
+        <span>🍎 Fresh Apple</span>
+        <span>🍎 Spoiled Apple</span>
+        <span>🍌 Fresh Banana</span>
+        <span>🍌 Spoiled Banana</span>
+        <span>🍊 Fresh Orange</span>
+        <span>🍊 Spoiled Orange</span>
+        <span>🍅 Fresh Tomato</span>
+        <span>🍅 Spoiled Tomato</span>
+        <span>🥔 Fresh Potato</span>
+        <span>🥔 Spoiled Potato</span>
+        <span>🥒 Fresh Cucumber</span>
+        <span>🥒 Spoiled Cucumber</span>
+        <span>🥬 Fresh Bitter Gourd</span>
+        <span>🥬 Spoiled Bitter Gourd</span>
+      </div>
+    </section>
+
+    <section class="cta-section">
+      <h2>Ready To Test Food Freshness?</h2>
+      <p>Upload your food image and get AI-powered freshness prediction.</p>
+      <a href="{{ url_for('scan') }}?type=fruit" class="btn primary"
+        >Scan Now</a
+      >
+    </section>
+
+    {% include 'components/footer.html' %}
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+  </body>
+</html>

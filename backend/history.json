@@ -1,0 +1,32 @@
+[
+    {
+        "timestamp": "2026-06-08 22:41:26",
+        "food_name": "Banana",
+        "condition": "Fresh",
+        "confidence": 98.5,
+        "selected_category": "Vegetable",
+        "detected_category": "Fruit",
+        "image_url": "/static/uploads/20260608224125_Screenshot_2026-05-29_175205.png",
+        "warning": "You selected Vegetable Scan, but the model detected Fruit."
+    },
+    {
+        "timestamp": "2026-06-08 22:35:46",
+        "food_name": "Oranges",
+        "condition": "Fresh",
+        "confidence": 48.79,
+        "selected_category": "Fruit",
+        "detected_category": "Unknown",
+        "image_url": "/static/uploads/20260608223546_apple.jpg",
+        "warning": ""
+    },
+    {
+        "timestamp": "2026-06-08 22:34:11",
+        "food_name": "Oranges",
+        "condition": "Fresh",
+        "confidence": 48.79,
+        "selected_category": "Fruit",
+        "detected_category": "Unknown",
+        "image_url": "/static/uploads/20260608223410_apple.jpg",
+        "warning": ""
+    }
+]

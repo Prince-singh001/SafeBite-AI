@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Contact | SafeBite AI</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🥗</text></svg>">
+
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/style.css') }}"
+    />
+  </head>
+
+  <body>
+    {% include 'components/navbar.html' %}
+
+    <section class="contact-hero">
+      <span class="badge">Get In Touch</span>
+
+      <h1>Contact SafeBite AI</h1>
+
+      <p>
+        Have a question, project idea or feedback? We'd love to hear from you.
+      </p>
+    </section>
+
+    <section class="contact-container">
+      <div class="contact-info">
+        <div class="info-card">
+          <h3>📧 Email</h3>
+          <p>support@safebiteai.com</p>
+        </div>
+
+        <div class="info-card">
+          <h3>📱 Phone</h3>
+          <p>+91 XXXXX XXXXX</p>
+        </div>
+
+        <div class="info-card">
+          <h3>📍 Location</h3>
+          <p>Bhopal, Madhya Pradesh, India</p>
+        </div>
+      </div>
+
+      <div class="contact-form-card">
+        <form class="contact-form">
+          <input type="text" placeholder="Full Name" />
+
+          <input type="email" placeholder="Email Address" />
+
+          <input type="text" placeholder="Subject" />
+
+          <textarea
+            rows="6"
+            placeholder="Write your message here..."
+          ></textarea>
+
+          <button type="submit" class="send-btn">Send Message</button>
+        </form>
+      </div>
+    </section>
+
+    <section class="faq-section">
+      <h2>Frequently Asked Questions</h2>
+
+      <div class="faq-card">
+        <h3>How accurate is SafeBite AI?</h3>
+        <p>
+          SafeBite AI uses a trained MobileNetV2 model and provides
+          confidence-based predictions.
+        </p>
+      </div>
+
+      <div class="faq-card">
+        <h3>What food types are supported?</h3>
+        <p>Apple, Banana, Orange, Potato, Tomato, Cucumber and Bitter Gourd.</p>
+      </div>
+    </section>
+
+    {% include 'components/footer.html' %}
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+  </body>
+</html>

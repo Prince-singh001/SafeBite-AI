@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SafeBite AI | Smart Food Freshness Detection</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🥗</text></svg>">
+
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+</head>
+
+<body>
+  {% include 'components/navbar.html' %}
+
+  <section class="hero">
+    <div class="hero-content">
+      <span class="badge">AI Powered Food Safety Platform</span>
+
+      <h1>Detect Fresh & Spoiled Food Instantly</h1>
+
+      <p>
+        SafeBite AI is a smart image-based food freshness detection system
+        that uses deep learning, CNN and image processing to classify food as
+        fresh or spoiled.
+      </p>
+
+      <div class="hero-actions">
+        <a href="{{ url_for('scan') }}?type=fruit" class="btn primary">Start Food Scan</a>
+        <a href="{{ url_for('features') }}" class="btn secondary">Explore Features</a>
+      </div>
+
+      <div class="trust-row">
+        <div>
+          <h3>14+</h3>
+          <p>Food Classes</p>
+        </div>
+        <div>
+          <h3>CNN</h3>
+          <p>AI Model</p>
+        </div>
+        <div>
+          <h3>Fast</h3>
+          <p>Instant Result</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="hero-visual">
+      <div class="scanner-card">
+        <div class="scanner-top">
+          <span class="scan-dot"></span>
+          <p>Live AI Preview</p>
+        </div>
+
+        <img src="{{ url_for('static', filename='image/home_hero_scan.png') }}" alt="Food freshness scanner" class="scanner-img" />
+
+        <h2>Smart Food Scanner</h2>
+        <p>
+          Upload food image and get freshness prediction with confidence
+          score.
+        </p>
+
+        <div class="preview-result">
+          <div>
+            <span>Food</span>
+            <strong>Apple</strong>
+          </div>
+          <div>
+            <span>Status</span>
+            <strong class="fresh">Fresh ✅</strong>
+          </div>
+          <div>
+            <span>Confidence</span>
+            <strong>96.4%</strong>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="category-section">
+    <div class="section-heading">
+      <span class="badge">Scan Categories</span>
+      <h2>Choose What You Want To Scan</h2>
+      <p>Scan fruits, vegetables and food items using SafeBite AI.</p>
+    </div>
+
+    <div class="category-grid">
+      <a href="{{ url_for('scan') }}?type=fruit" class="category-card">
+        <img src="{{ url_for('static', filename='image/fruit_category.png') }}"
+          alt="Fruits" />
+        <div class="cat-icon">🍎</div>
+        <h3>Fruit Scan</h3>
+        <p>Detect freshness of apple, banana, orange and more fruits.</p>
+      </a>
+
+      <a href="{{ url_for('scan') }}?type=vegetable" class="category-card">
+        <img src="{{ url_for('static', filename='image/vegetable_category.png') }}"
+          alt="Vegetables" />
+        <div class="cat-icon">🥦</div>
+        <h3>Vegetable Scan</h3>
+        <p>Analyze vegetables like tomato, potato and cucumber.</p>
+      </a>
+
+      <a href="{{ url_for('scan') }}?type=food" class="category-card">
+        <img src="{{ url_for('static', filename='image/food_category.png') }}"
+          alt="Food" />
+        <div class="cat-icon">🍱</div>
+        <h3>Food Scan</h3>
+        <p>Scan food item images and check freshness condition.</p>
+      </a>
+    </div>
+  </section>
+
+  <section class="workflow-section">
+    <div class="section-heading">
+      <span class="badge">How It Works</span>
+      <h2>Simple 3-Step AI Scanning</h2>
+    </div>
+
+    <div class="workflow-grid">
+      <div class="workflow-card">
+        <span>01</span>
+        <h3>Choose Category</h3>
+        <p>Select fruit, vegetable or food category.</p>
+      </div>
+
+      <div class="workflow-card">
+        <span>02</span>
+        <h3>Upload Image</h3>
+        <p>Upload JPG, PNG, JPEG or WEBP food image.</p>
+      </div>
+
+      <div class="workflow-card">
+        <span>03</span>
+        <h3>Get Result</h3>
+        <p>View freshness status and confidence score.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="cta-section">
+    <h2>Ready to Check Your Food?</h2>
+    <p>Start scanning food freshness with SafeBite AI.</p>
+    <a href="{{ url_for('scan') }}?type=fruit" class="btn primary">Scan Now</a>
+  </section>
+
+  {% include 'components/footer.html' %}
+
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+
+</html>

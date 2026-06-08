@@ -1,0 +1,39 @@
+<footer class="footer">
+  <div class="footer-container">
+    <div class="footer-brand">
+      <a href="{{ url_for('home') }}" class="logo footer-logo">
+        <span>🥗</span> SafeBite AI
+      </a>
+      <p class="footer-desc">
+        A smart food safety platform using deep learning to instantly classify food freshness, helping you minimize waste and prevent illness.
+      </p>
+    </div>
+
+    <div class="footer-links-grid">
+      <div class="footer-col">
+        <h4>Product</h4>
+        <a href="{{ url_for('home') }}">Home</a>
+        <a href="{{ url_for('scan') }}?type=fruit">Food Scanner</a>
+        <a href="{{ url_for('features') }}">Features</a>
+        <a href="{{ url_for('history') }}">Scan History</a>
+      </div>
+
+      <div class="footer-col">
+        <h4>Company</h4>
+        <a href="{{ url_for('about') }}">About Us</a>
+        <a href="{{ url_for('contact') }}">Contact</a>
+      </div>
+
+      <div class="footer-col">
+        <h4>Tech Stack</h4>
+        <span class="tech-tag">MobileNetV2</span>
+        <span class="tech-tag">TensorFlow</span>
+        <span class="tech-tag">Flask Server</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer-bottom">
+    <p>&copy; 2026 SafeBite AI. Smart Food Freshness Detection System. All Rights Reserved.</p>
+  </div>
+</footer>

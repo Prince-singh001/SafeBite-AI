@@ -1,0 +1,92 @@
+# =========================
+# Python
+# =========================
+__pycache__/
+*.py[cod]
+*$py.class
+
+# =========================
+# Virtual Environment
+# =========================
+venv/
+backend/venv/
+.env
+.env.*
+
+# =========================
+# VS Code
+# =========================
+.vscode/
+
+# =========================
+# PyCharm
+# =========================
+.idea/
+
+# =========================
+# Dataset (Very Large)
+# =========================
+dataset/
+backend/dataset/
+
+# =========================
+# Training Graphs
+# =========================
+graphs/
+backend/graphs/
+
+# =========================
+# Upload Images
+# =========================
+frontend/static/uploads/
+
+# =========================
+# Logs
+# =========================
+*.log
+
+# =========================
+# TensorFlow Checkpoints
+# =========================
+checkpoint
+*.ckpt
+
+# =========================
+# Cache Files
+# =========================
+.cache/
+
+# =========================
+# OS Files
+# =========================
+Thumbs.db
+.DS_Store
+
+# =========================
+# Jupyter
+# =========================
+.ipynb_checkpoints/
+
+# =========================
+# Build Files
+# =========================
+build/
+dist/
+
+# =========================
+# Temporary Files
+# =========================
+temp/
+tmp/
+
+# =========================
+# Model (Choose ONE option)
+# =========================
+
+# OPTION 1:
+# Uncomment if you DO NOT want to upload trained model
+# backend/models/
+
+# OPTION 2:
+# Keep model uploaded (Recommended for project demo)
+# Leave backend/models/ visible

@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Scan History | SafeBite AI</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🥗</text></svg>">
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/style.css') }}"
+    />
+  </head>
+
+  <body>
+    {% include 'components/navbar.html' %}
+
+    <section class="history-hero">
+      <span class="badge">Activity Log</span>
+      <h1>Scan History</h1>
+      <p>
+        View the history of all analyzed food scans, detected items, and conditions.
+      </p>
+    </section>
+
+    <div class="history-container">
+      {% if history %}
+        <div class="history-actions-bar">
+          <span>Showing {{ history|length }} recent scan{{ 's' if history|length > 1 else '' }}</span>
+          <button class="clear-history-btn" id="clearHistoryBtn" type="button">🗑️ Clear History</button>
+        </div>
+
+        <div class="history-grid">
+          {% for item in history %}
+            <div class="history-card">
+              <div class="history-img-box">
+                <img src="{{ item.image_url }}" alt="{{ item.food_name }}" />
+                <span class="status-badge {{ 'fresh' if item.condition == 'Fresh' else 'spoiled' }}">
+                  {{ 'Fresh ✅' if item.condition == 'Fresh' else 'Spoiled ⚠️' }}
+                </span>
+              </div>
+              <div class="history-details">
+                <div class="history-header">
+                  <h3>{{ item.food_name }}</h3>
+                  <span class="confidence-tag">{{ (item.confidence * 100)|round(1) if item.confidence < 1.0 else item.confidence|round(1) }}%</span>
+                </div>
+                
+                <div class="history-meta">
+                  <div class="meta-row">
+                    <span>Category:</span>
+                    <strong>{{ item.detected_category }}</strong>
+                  </div>
+                  <div class="meta-row">
+                    <span>Selected Category:</span>
+                    <strong>{{ item.selected_category }}</strong>
+                  </div>
+                  <div class="meta-row timestamp">
+                    <span>Time:</span>
+                    <strong>{{ item.timestamp }}</strong>
+                  </div>
+                </div>
+
+                {% if item.warning %}
+                  <div class="history-warning-box">
+                    <span class="warning-icon">⚠️</span>
+                    <p>{{ item.warning }}</p>
+                  </div>
+                {% endif %}
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="history-empty-state">
+          <div class="empty-icon">🥗</div>
+          <h2>No Scan History Found</h2>
+          <p>You haven't scanned any food items yet. Upload an image to analyze its freshness condition!</p>
+          <a href="{{ url_for('scan') }}?type=fruit" class="btn primary">Start Scanning Now</a>
+        </div>
+      {% endif %}
+    </div>
+
+    {% include 'components/footer.html' %}
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script>
+      const clearBtn = document.getElementById('clearHistoryBtn');
+      if (clearBtn) {
+        clearBtn.addEventListener('click', async () => {
+          if (confirm('Are you sure you want to clear your entire scan history? This action cannot be undone.')) {
+            try {
+              const response = await fetch("{{ url_for('clear_history') }}", {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json'
+                }
+              });
+              const result = await response.json();
+              if (result.success) {
+                location.reload();
+              } else {
+                alert('Error: ' + result.error);
+              }
+            } catch (err) {
+              console.error(err);
+              alert('Failed to connect to the server.');
+            }
+          }
+        });
+      }
+    </script>
+  </body>
+</html>
