@@ -169,3 +169,13 @@ def predict_image(image_path):
         "top_predictions": top_predictions,
         "note": "Confidence is model probability, not guaranteed real-world accuracy."
     }
+
+
+# Warm up the model with a dummy prediction to allocate internal TensorFlow execution buffers at boot time
+try:
+    print("Warming up SafeBite AI model...")
+    dummy_input = np.zeros((1, IMG_SIZE, IMG_SIZE, 3), dtype=np.float32)
+    _ = model.predict(dummy_input, verbose=0)
+    print("Model warmed up successfully!")
+except Exception as e:
+    print(f"Model warm up failed: {e}")
