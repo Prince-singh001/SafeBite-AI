@@ -1,5 +1,65 @@
 [
     {
+        "timestamp": "2026-06-09 22:55:09",
+        "food_name": "Oranges",
+        "condition": "Fresh",
+        "confidence": 64.0,
+        "selected_category": "Fruit",
+        "detected_category": "Fruit",
+        "image_url": "/static/uploads/20260609225508_apple.jpg",
+        "warning": ""
+    },
+    {
+        "timestamp": "2026-06-09 22:49:57",
+        "food_name": "Oranges",
+        "condition": "Fresh",
+        "confidence": 64.0,
+        "selected_category": "Fruit",
+        "detected_category": "Fruit",
+        "image_url": "/static/uploads/20260609224956_apple.jpg",
+        "warning": ""
+    },
+    {
+        "timestamp": "2026-06-09 22:45:13",
+        "food_name": "Oranges",
+        "condition": "Fresh",
+        "confidence": 47.49,
+        "selected_category": "Fruit",
+        "detected_category": "Unknown",
+        "image_url": "/static/uploads/20260609224512_apple.jpg",
+        "warning": ""
+    },
+    {
+        "timestamp": "2026-06-09 22:43:59",
+        "food_name": "Pizza",
+        "condition": "Spoiled",
+        "confidence": 96.0,
+        "selected_category": "Food",
+        "detected_category": "Food",
+        "image_url": "/static/uploads/20260609224359_spoiled_pizza.jpg",
+        "warning": ""
+    },
+    {
+        "timestamp": "2026-06-09 22:42:12",
+        "food_name": "Oranges",
+        "condition": "Fresh",
+        "confidence": 47.49,
+        "selected_category": "Fruit",
+        "detected_category": "Unknown",
+        "image_url": "/static/uploads/20260609224212_apple.jpg",
+        "warning": ""
+    },
+    {
+        "timestamp": "2026-06-09 22:41:06",
+        "food_name": "Apples",
+        "condition": "Fresh",
+        "confidence": 97.5,
+        "selected_category": "Fruit",
+        "detected_category": "Unknown",
+        "image_url": "/static/uploads/20260609224105_fr-img.jpg",
+        "warning": ""
+    },
+    {
         "timestamp": "2026-06-09 03:20:27",
         "food_name": "Oranges",
         "condition": "Fresh",

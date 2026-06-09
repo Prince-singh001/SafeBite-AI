@@ -2,9 +2,6 @@ import os
 import json
 import numpy as np
 import cv2
-import tensorflow as tf
-
-from tensorflow.keras.preprocessing.image import img_to_array
 
 IMG_SIZE = 224
 MAX_DISPLAY_CONFIDENCE = 97.50
@@ -16,26 +13,74 @@ MODEL_PATH = os.path.join(
     "../models/safebite_mobilenetv2_model.h5"
 )
 
+TFLITE_PATH = os.path.join(
+    BASE_DIR,
+    "../models/safebite_mobilenetv2_model.tflite"
+)
+
 CLASS_PATH = os.path.join(
     BASE_DIR,
     "../models/class_indices.json"
 )
 
-# Load Model
-print("Loading SafeBite AI model...")
+# Global variables for models
+interpreter = None
+input_details = None
+output_details = None
+model = None  # Fallback Keras model
 
-model = tf.keras.models.load_model(
-    MODEL_PATH,
-    compile=False
-)
 
-print("Model loaded successfully!")
+def load_model():
+    """Loads the TFLite model by default, falling back to Keras H5 if TFLite is unavailable."""
+    global interpreter, input_details, output_details, model
+
+    # Try loading TFLite model first
+    if os.path.exists(TFLITE_PATH):
+        try:
+            print("Loading TFLite model...")
+            try:
+                import tflite_runtime.interpreter as tflite
+            except ImportError:
+                try:
+                    from tensorflow import lite as tflite
+                except ImportError:
+                    tflite = None
+
+            if tflite is not None:
+                interpreter = tflite.Interpreter(model_path=TFLITE_PATH)
+                interpreter.allocate_tensors()
+                input_details = interpreter.get_input_details()
+                output_details = interpreter.get_output_details()
+                print("TFLite model loaded successfully!")
+                model = None  # Clear fallback Keras model if loaded
+                return
+            else:
+                print("tflite-runtime or tensorflow.lite not found. Falling back to Keras.")
+        except Exception as e:
+            print(f"Failed to load TFLite model: {e}. Falling back to Keras.")
+
+    # Fallback to Keras model loading
+    if os.path.exists(MODEL_PATH):
+        try:
+            print("Loading SafeBite AI Keras model (fallback)...")
+            import tensorflow as tf
+            model = tf.keras.models.load_model(MODEL_PATH, compile=False)
+            print("Keras model loaded successfully!")
+            interpreter = None
+        except Exception as e:
+            print(f"Failed to load Keras model: {e}")
+    else:
+        print("No model files found.")
+
 
 # Load Class Indices
 with open(CLASS_PATH, "r") as f:
     class_indices = json.load(f)
 
 class_names = {v: k for k, v in class_indices.items()}
+
+# Initialize model
+load_model()
 
 
 def format_label(label):
@@ -75,7 +120,6 @@ def preprocess_image(image_path):
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     image = cv2.resize(image, (IMG_SIZE, IMG_SIZE))
     image = image.astype("float32") / 255.0
-    image = img_to_array(image)
     image = np.expand_dims(image, axis=0)
 
     return image
@@ -107,7 +151,7 @@ def get_top_predictions(prediction, top_n=3):
 
 def predict_image(image_path):
     filename = os.path.basename(image_path).lower()
-    
+
     # Define non-core keywords that require overrides
     non_core_items = {
         "mango": "Mango",
@@ -118,7 +162,7 @@ def predict_image(image_path):
         "rice": "Rice",
         "bread": "Bread"
     }
-    
+
     detected_item = None
     for keyword, name in non_core_items.items():
         if keyword in filename:
@@ -131,10 +175,10 @@ def predict_image(image_path):
             condition = "Spoiled"
         elif "fresh" in filename:
             condition = "Fresh"
-        
+
         confidence = 96.0
         label = f"{condition.lower()}{detected_item.lower().replace(' ', '')}"
-        
+
         return {
             "label": label,
             "item": detected_item,
@@ -155,7 +199,15 @@ def predict_image(image_path):
 
     image = preprocess_image(image_path)
 
-    prediction = model.predict(image, verbose=0)
+    # Perform prediction
+    if interpreter is not None:
+        interpreter.set_tensor(input_details[0]['index'], image)
+        interpreter.invoke()
+        prediction = interpreter.get_tensor(output_details[0]['index'])
+    elif model is not None:
+        prediction = model.predict(image, verbose=0)
+    else:
+        raise RuntimeError("No model loaded for inference.")
 
     top_predictions = get_top_predictions(prediction, top_n=3)
     best_result = top_predictions[0]
@@ -171,11 +223,19 @@ def predict_image(image_path):
     }
 
 
-# Warm up the model with a dummy prediction to allocate internal TensorFlow execution buffers at boot time
+# Warm up the model with a dummy prediction
 try:
     print("Warming up SafeBite AI model...")
     dummy_input = np.zeros((1, IMG_SIZE, IMG_SIZE, 3), dtype=np.float32)
-    _ = model.predict(dummy_input, verbose=0)
-    print("Model warmed up successfully!")
+    if interpreter is not None:
+        interpreter.set_tensor(input_details[0]['index'], dummy_input)
+        interpreter.invoke()
+        _ = interpreter.get_tensor(output_details[0]['index'])
+        print("TFLite model warmed up successfully!")
+    elif model is not None:
+        _ = model.predict(dummy_input, verbose=0)
+        print("Keras model warmed up successfully!")
+    else:
+        print("No model loaded to warm up.")
 except Exception as e:
     print(f"Model warm up failed: {e}")

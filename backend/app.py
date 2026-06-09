@@ -135,7 +135,7 @@ def predict():
 
         # Auto-detect category from predicted item name
         item_lower = result["item"].lower().strip()
-        if item_lower in ["apple", "banana", "orange", "mango"]:
+        if item_lower in ["apple", "apples", "banana", "orange", "oranges", "mango"]:
             detected_category = "Fruit"
         elif item_lower in ["tomato", "potato", "cucumber", "bitter gourd", "bittergourd", "bittergroud"]:
             detected_category = "Vegetable"
@@ -221,14 +221,32 @@ def feedback():
             y = np.zeros((1, len(predict_module.class_indices)))
             y[0, target_idx] = 1.0
 
-            predict_module.model.compile(
+            # Load the Keras model dynamically from disk for retraining
+            keras_model = tf.keras.models.load_model(predict_module.MODEL_PATH, compile=False)
+
+            keras_model.compile(
                 optimizer=tf.keras.optimizers.Adam(learning_rate=1e-5),
                 loss="categorical_crossentropy",
                 metrics=["accuracy"]
             )
             
-            predict_module.model.fit(processed_image, y, epochs=5, verbose=0)
-            predict_module.model.save(predict_module.MODEL_PATH)
+            keras_model.fit(processed_image, y, epochs=5, verbose=0)
+            keras_model.save(predict_module.MODEL_PATH)
+
+            # Re-convert to TFLite model dynamically after retraining
+            try:
+                print("Re-converting model to TFLite after retraining...")
+                converter = tf.lite.TFLiteConverter.from_keras_model(keras_model)
+                converter.optimizations = [tf.lite.Optimize.DEFAULT]
+                tflite_model = converter.convert()
+                with open(predict_module.TFLITE_PATH, "wb") as f:
+                    f.write(tflite_model)
+                print("TFLite model updated successfully after retraining!")
+            except Exception as convert_err:
+                print(f"Failed to update TFLite model: {convert_err}")
+
+            # Reload prediction interpreter to pick up new weights
+            predict_module.load_model()
             trained_real = True
         except Exception as e:
             print(f"Online retraining failed: {e}")
