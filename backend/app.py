@@ -147,7 +147,9 @@ def predict():
         # Check for category mismatch
         warning = ""
         if detected_category != "Unknown" and selected_category != detected_category:
-            warning = f"You selected {selected_category} Scan, but the model detected {detected_category}."
+            warning = f"The uploaded image belongs to the {detected_category} category, but you selected {selected_category} Scan."
+
+        stability_warning = result.get("stability_warning", "")
 
         scan_record = {
             "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
@@ -157,7 +159,8 @@ def predict():
             "selected_category": selected_category,
             "detected_category": detected_category,
             "image_url": f"/static/uploads/{filename}",
-            "warning": warning
+            "warning": warning,
+            "stability_warning": stability_warning
         }
         save_to_history(scan_record)
 
@@ -170,7 +173,9 @@ def predict():
             "image_url": f"/static/uploads/{filename}",
             "selected_category": selected_category,
             "detected_category": detected_category,
-            "warning": warning
+            "warning": warning,
+            "stability_warning": stability_warning,
+            "top_predictions": result.get("top_predictions", [])
         })
 
     except Exception as e:

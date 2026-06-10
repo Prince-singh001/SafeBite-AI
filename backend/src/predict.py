@@ -2,6 +2,7 @@ import os
 import json
 import numpy as np
 import cv2
+import threading
 
 IMG_SIZE = 224
 MAX_DISPLAY_CONFIDENCE = 97.50
@@ -28,6 +29,10 @@ interpreter = None
 input_details = None
 output_details = None
 model = None  # Fallback Keras model
+
+# Background loading coordination
+model_loading_thread = None
+model_loaded_event = threading.Event()
 
 
 def load_model():
@@ -73,14 +78,45 @@ def load_model():
         print("No model files found.")
 
 
+def load_and_warmup_worker():
+    """Worker target for loading and warming up the model in the background."""
+    try:
+        load_model()
+        # Warm up the model with a dummy prediction
+        print("Warming up SafeBite AI model...")
+        dummy_input = np.zeros((1, IMG_SIZE, IMG_SIZE, 3), dtype=np.float32)
+        if interpreter is not None:
+            interpreter.set_tensor(input_details[0]['index'], dummy_input)
+            interpreter.invoke()
+            _ = interpreter.get_tensor(output_details[0]['index'])
+            print("TFLite model warmed up successfully!")
+        elif model is not None:
+            _ = model.predict(dummy_input, verbose=0)
+            print("Keras model warmed up successfully!")
+        else:
+            print("No model loaded to warm up.")
+    except Exception as e:
+        print(f"Model warm up failed: {e}")
+    finally:
+        model_loaded_event.set()
+
+
+def start_background_loading():
+    """Starts the background thread to load and warm up the model."""
+    global model_loading_thread
+    model_loaded_event.clear()
+    model_loading_thread = threading.Thread(target=load_and_warmup_worker, name="ModelLoader", daemon=True)
+    model_loading_thread.start()
+
+
 # Load Class Indices
 with open(CLASS_PATH, "r") as f:
     class_indices = json.load(f)
 
 class_names = {v: k for k, v in class_indices.items()}
 
-# Initialize model
-load_model()
+# Start background model loading
+start_background_loading()
 
 
 def format_label(label):
@@ -104,6 +140,12 @@ def format_label(label):
     item = item.replace("bittergroud", "bitter gourd")
     item = item.replace("bittergourd", "bitter gourd")
     item = item.strip().title()
+
+    # Singularize common names for category consistency
+    if item == "Apples":
+        item = "Apple"
+    elif item == "Oranges":
+        item = "Orange"
 
     return item, condition
 
@@ -149,7 +191,40 @@ def get_top_predictions(prediction, top_n=3):
     return results
 
 
+def check_prediction_stability(top_predictions):
+    """
+    Checks if prediction has low confidence or narrow margin between opposite conditions.
+    Returns (is_stable, warning_message).
+    """
+    if not top_predictions:
+        return True, ""
+
+    best_pred = top_predictions[0]
+    best_conf = best_pred["confidence"]
+
+    # 1. Check absolute confidence
+    if best_conf < 55.0:
+        return False, f"Low confidence prediction ({best_conf}%). Please try a clearer, well-lit close-up image."
+
+    # 2. Check margin between Fresh and Spoiled for the same item if both exist in top predictions
+    for other in top_predictions[1:]:
+        if other["item"].lower() == best_pred["item"].lower() and other["condition"] != best_pred["condition"]:
+            margin = abs(best_pred["raw_confidence"] - other["raw_confidence"])
+            if margin < 15.0:
+                return False, (
+                    f"Borderline freshness status detected. Margin between Fresh and Spoiled is narrow "
+                    f"({round(margin, 1)}%). Adjust lighting or position for more stable analysis."
+                )
+
+    return True, ""
+
+
 def predict_image(image_path):
+    # Ensure the model loading is complete
+    if not model_loaded_event.is_set():
+        print("Waiting for background model loader to complete...")
+        model_loaded_event.wait(timeout=15.0)
+
     filename = os.path.basename(image_path).lower()
 
     # Define non-core keywords that require overrides
@@ -178,6 +253,15 @@ def predict_image(image_path):
 
         confidence = 96.0
         label = f"{condition.lower()}{detected_item.lower().replace(' ', '')}"
+        dummy_top = [
+            {
+                "label": label,
+                "item": detected_item,
+                "condition": condition,
+                "confidence": confidence,
+                "raw_confidence": confidence
+            }
+        ]
 
         return {
             "label": label,
@@ -185,15 +269,8 @@ def predict_image(image_path):
             "condition": condition,
             "confidence": confidence,
             "raw_confidence": confidence,
-            "top_predictions": [
-                {
-                    "label": label,
-                    "item": detected_item,
-                    "condition": condition,
-                    "confidence": confidence,
-                    "raw_confidence": confidence
-                }
-            ],
+            "top_predictions": dummy_top,
+            "stability_warning": "",
             "note": "Interpreted from filename for testing/mismatch validation."
         }
 
@@ -211,6 +288,7 @@ def predict_image(image_path):
 
     top_predictions = get_top_predictions(prediction, top_n=3)
     best_result = top_predictions[0]
+    is_stable, stability_warning = check_prediction_stability(top_predictions)
 
     return {
         "label": best_result["label"],
@@ -219,23 +297,6 @@ def predict_image(image_path):
         "confidence": best_result["confidence"],
         "raw_confidence": best_result["raw_confidence"],
         "top_predictions": top_predictions,
+        "stability_warning": stability_warning,
         "note": "Confidence is model probability, not guaranteed real-world accuracy."
     }
-
-
-# Warm up the model with a dummy prediction
-try:
-    print("Warming up SafeBite AI model...")
-    dummy_input = np.zeros((1, IMG_SIZE, IMG_SIZE, 3), dtype=np.float32)
-    if interpreter is not None:
-        interpreter.set_tensor(input_details[0]['index'], dummy_input)
-        interpreter.invoke()
-        _ = interpreter.get_tensor(output_details[0]['index'])
-        print("TFLite model warmed up successfully!")
-    elif model is not None:
-        _ = model.predict(dummy_input, verbose=0)
-        print("Keras model warmed up successfully!")
-    else:
-        print("No model loaded to warm up.")
-except Exception as e:
-    print(f"Model warm up failed: {e}")
