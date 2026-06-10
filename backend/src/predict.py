@@ -9,20 +9,20 @@ MAX_DISPLAY_CONFIDENCE = 97.50
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-MODEL_PATH = os.path.join(
+MODEL_PATH = os.path.abspath(os.path.join(
     BASE_DIR,
     "../models/safebite_mobilenetv2_model.h5"
-)
+))
 
-TFLITE_PATH = os.path.join(
+TFLITE_PATH = os.path.abspath(os.path.join(
     BASE_DIR,
     "../models/safebite_mobilenetv2_model.tflite"
-)
+))
 
-CLASS_PATH = os.path.join(
+CLASS_PATH = os.path.abspath(os.path.join(
     BASE_DIR,
     "../models/class_indices.json"
-)
+))
 
 # Global variables for models
 interpreter = None
@@ -30,93 +30,123 @@ input_details = None
 output_details = None
 model = None  # Fallback Keras model
 
-# Background loading coordination
-model_loading_thread = None
-model_loaded_event = threading.Event()
+# Safe lazy loading coordination
+_model_lock = threading.Lock()
+model_loaded = False
 
+# Class Indices initialization
+class_indices = {}
+class_names = {}
 
-def load_model():
-    """Loads the TFLite model by default, falling back to Keras H5 if TFLite is unavailable."""
-    global interpreter, input_details, output_details, model
-
-    # Try loading TFLite model first
-    if os.path.exists(TFLITE_PATH):
-        try:
-            print("Loading TFLite model...")
-            try:
-                import tflite_runtime.interpreter as tflite
-            except ImportError:
-                try:
-                    from tensorflow import lite as tflite
-                except ImportError:
-                    tflite = None
-
-            if tflite is not None:
-                interpreter = tflite.Interpreter(model_path=TFLITE_PATH)
-                interpreter.allocate_tensors()
-                input_details = interpreter.get_input_details()
-                output_details = interpreter.get_output_details()
-                print("TFLite model loaded successfully!")
-                model = None  # Clear fallback Keras model if loaded
-                return
-            else:
-                print("tflite-runtime or tensorflow.lite not found. Falling back to Keras.")
-        except Exception as e:
-            print(f"Failed to load TFLite model: {e}. Falling back to Keras.")
-
-    # Fallback to Keras model loading
-    if os.path.exists(MODEL_PATH):
-        try:
-            print("Loading SafeBite AI Keras model (fallback)...")
-            import tensorflow as tf
-            model = tf.keras.models.load_model(MODEL_PATH, compile=False)
-            print("Keras model loaded successfully!")
-            interpreter = None
-        except Exception as e:
-            print(f"Failed to load Keras model: {e}")
-    else:
-        print("No model files found.")
-
-
-def load_and_warmup_worker():
-    """Worker target for loading and warming up the model in the background."""
+if os.path.exists(CLASS_PATH):
     try:
-        load_model()
-        # Warm up the model with a dummy prediction
-        print("Warming up SafeBite AI model...")
-        dummy_input = np.zeros((1, IMG_SIZE, IMG_SIZE, 3), dtype=np.float32)
-        if interpreter is not None:
-            interpreter.set_tensor(input_details[0]['index'], dummy_input)
-            interpreter.invoke()
-            _ = interpreter.get_tensor(output_details[0]['index'])
-            print("TFLite model warmed up successfully!")
-        elif model is not None:
-            _ = model.predict(dummy_input, verbose=0)
-            print("Keras model warmed up successfully!")
-        else:
-            print("No model loaded to warm up.")
+        with open(CLASS_PATH, "r") as f:
+            class_indices = json.load(f)
+        class_names = {v: k for k, v in class_indices.items()}
     except Exception as e:
-        print(f"Model warm up failed: {e}")
-    finally:
-        model_loaded_event.set()
+        print(f"Error loading class indices at startup: {e}")
 
 
-def start_background_loading():
-    """Starts the background thread to load and warm up the model."""
-    global model_loading_thread
-    model_loaded_event.clear()
-    model_loading_thread = threading.Thread(target=load_and_warmup_worker, name="ModelLoader", daemon=True)
-    model_loading_thread.start()
+def get_model():
+    """Lazily loads the model (TFLite or Keras H5 fallback) exactly once in a thread-safe manner."""
+    global interpreter, input_details, output_details, model, model_loaded, class_indices, class_names
 
+    with _model_lock:
+        if model_loaded:
+            return interpreter, model
 
-# Load Class Indices
-with open(CLASS_PATH, "r") as f:
-    class_indices = json.load(f)
+        # Console prints for debugging
+        print(f"MODEL_PATH: {MODEL_PATH}")
+        print(f"TFLITE_PATH: {TFLITE_PATH}")
+        print(f"CLASS_PATH: {CLASS_PATH}")
 
-class_names = {v: k for k, v in class_indices.items()}
+        # Check model files existence
+        h5_exists = os.path.exists(MODEL_PATH)
+        tflite_exists = os.path.exists(TFLITE_PATH)
 
-# Start background model loading
-start_background_loading()
+        if not h5_exists and not tflite_exists:
+            raise FileNotFoundError(
+                f"Model files not found. Checked absolute paths:\n"
+                f"- Keras H5: {MODEL_PATH}\n"
+                f"- TFLite: {TFLITE_PATH}"
+            )
+
+        # Check class indices file existence
+        if not os.path.exists(CLASS_PATH):
+            raise FileNotFoundError(
+                f"Class indices file not found. Checked absolute path: {CLASS_PATH}"
+            )
+
+        # Load class indices if not already loaded
+        if not class_indices:
+            try:
+                with open(CLASS_PATH, "r") as f:
+                    class_indices = json.load(f)
+                class_names = {v: k for k, v in class_indices.items()}
+            except Exception as e:
+                raise RuntimeError(f"Failed to parse class indices JSON: {e}")
+
+        # 1. Attempt to load TFLite model first
+        if tflite_exists:
+            try:
+                print("Attempting to load TFLite model...")
+                try:
+                    import tflite_runtime.interpreter as tflite
+                except ImportError:
+                    try:
+                        from tensorflow import lite as tflite
+                    except ImportError:
+                        tflite = None
+
+                if tflite is not None:
+                    interpreter = tflite.Interpreter(model_path=TFLITE_PATH)
+                    interpreter.allocate_tensors()
+                    input_details = interpreter.get_input_details()
+                    output_details = interpreter.get_output_details()
+                    print("Model loaded successfully (TFLite)")
+
+                    # Warm up model
+                    try:
+                        print("Warming up SafeBite TFLite model...")
+                        dummy_input = np.zeros((1, IMG_SIZE, IMG_SIZE, 3), dtype=np.float32)
+                        interpreter.set_tensor(input_details[0]['index'], dummy_input)
+                        interpreter.invoke()
+                        _ = interpreter.get_tensor(output_details[0]['index'])
+                        print("TFLite model warmed up successfully!")
+                    except Exception as warmup_err:
+                        print(f"TFLite warm up failed: {warmup_err}")
+
+                    model_loaded = True
+                    return interpreter, None
+                else:
+                    print("tflite-runtime or tensorflow.lite not found. Falling back to Keras H5.")
+            except Exception as tflite_err:
+                print(f"TFLite load failed: {tflite_err}. Falling back to Keras H5.")
+
+        # 2. Fallback to Keras model loading
+        if h5_exists:
+            try:
+                print("Attempting to load Keras model...")
+                import tensorflow as tf
+                model = tf.keras.models.load_model(MODEL_PATH, compile=False)
+                print("Model loaded successfully (Keras H5)")
+
+                # Warm up model
+                try:
+                    print("Warming up SafeBite Keras model...")
+                    dummy_input = np.zeros((1, IMG_SIZE, IMG_SIZE, 3), dtype=np.float32)
+                    _ = model.predict(dummy_input, verbose=0)
+                    print("Keras model warmed up successfully!")
+                except Exception as warmup_err:
+                    print(f"Keras warm up failed: {warmup_err}")
+
+                model_loaded = True
+                return None, model
+            except Exception as keras_err:
+                print(f"Keras H5 load failed: {keras_err}")
+                raise RuntimeError(f"Failed to load both TFLite and Keras H5 models: {keras_err}")
+
+        raise FileNotFoundError("Model file missing or corrupted. No model loaded.")
 
 
 def format_label(label):
@@ -152,7 +182,7 @@ def format_label(label):
 
 def preprocess_image(image_path):
     if not os.path.exists(image_path):
-        raise ValueError("Image path not found.")
+        raise ValueError(f"Image path not found: {image_path}")
 
     image = cv2.imread(image_path)
 
@@ -220,10 +250,8 @@ def check_prediction_stability(top_predictions):
 
 
 def predict_image(image_path):
-    # Ensure the model loading is complete
-    if not model_loaded_event.is_set():
-        print("Waiting for background model loader to complete...")
-        model_loaded_event.wait(timeout=15.0)
+    # Always invoke lazy get_model() loading wrapper
+    curr_interpreter, curr_model = get_model()
 
     filename = os.path.basename(image_path).lower()
 
@@ -277,12 +305,12 @@ def predict_image(image_path):
     image = preprocess_image(image_path)
 
     # Perform prediction
-    if interpreter is not None:
-        interpreter.set_tensor(input_details[0]['index'], image)
-        interpreter.invoke()
-        prediction = interpreter.get_tensor(output_details[0]['index'])
-    elif model is not None:
-        prediction = model.predict(image, verbose=0)
+    if curr_interpreter is not None:
+        curr_interpreter.set_tensor(input_details[0]['index'], image)
+        curr_interpreter.invoke()
+        prediction = curr_interpreter.get_tensor(output_details[0]['index'])
+    elif curr_model is not None:
+        prediction = curr_model.predict(image, verbose=0)
     else:
         raise RuntimeError("No model loaded for inference.")
 
