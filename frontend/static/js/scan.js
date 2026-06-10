@@ -1,26 +1,23 @@
 console.log("SafeBite AI Scan Page Loaded");
 
-// Navbar & Theme
 const themeToggle = document.getElementById("themeToggle");
 const menuBtn = document.getElementById("menuBtn");
 const navLinks = document.getElementById("navLinks");
+
 const scanBtn = document.getElementById("scanBtn");
 const scanMenu = document.getElementById("scanMenu");
 
-// Scan UI
 const tabButtons = document.querySelectorAll(".tab-btn");
 const scanTitle = document.getElementById("scanTitle");
 const scanDesc = document.getElementById("scanDesc");
-const resultSelectedCategory = document.getElementById(
-  "resultSelectedCategory",
-);
-const resultDetectedCategory = document.getElementById(
-  "resultDetectedCategory",
-);
-const categoryWarningBox = document.getElementById("categoryWarningBox");
-const categoryWarningMessage = document.getElementById(
-  "categoryWarningMessage",
-);
+
+const resultSelectedCategory =
+  document.getElementById("resultSelectedCategory") ||
+  document.getElementById("resultCategory");
+
+const resultDetectedCategory =
+  document.getElementById("resultDetectedCategory") ||
+  document.getElementById("detectedCategory");
 
 const foodImage = document.getElementById("foodImage");
 const previewBox = document.getElementById("previewBox");
@@ -32,31 +29,18 @@ const resultConfidence = document.getElementById("resultConfidence");
 const foodName = document.getElementById("foodName");
 const resultMessage = document.getElementById("resultMessage");
 
-// Feedback UI
-const feedbackSection = document.getElementById("feedbackSection");
-const feedbackYes = document.getElementById("feedbackYes");
-const feedbackNo = document.getElementById("feedbackNo");
-const correctionSection = document.getElementById("correctionSection");
-const correctionLabelSelect = document.getElementById("correctionLabelSelect");
-const correctionConditionSelect = document.getElementById(
-  "correctionConditionSelect",
+const categoryWarningBox = document.getElementById("categoryWarningBox");
+const categoryWarningMessage = document.getElementById(
+  "categoryWarningMessage",
 );
-const submitCorrection = document.getElementById("submitCorrection");
-const trainingStatus = document.getElementById("trainingStatus");
-const trainingStatusText = document.getElementById("trainingStatusText");
 
-// Live Camera
 const liveScan = document.getElementById("liveScan");
-const uploadArea = document.getElementById("uploadArea");
 const cameraArea = document.getElementById("cameraArea");
 const webcam = document.getElementById("webcam");
 const captureImage = document.getElementById("captureImage");
 
 let localStream = null;
-let lastImageUrl = null;
-let lastPredictedLabel = null;
 
-// Scan Data
 const scanData = {
   fruit: {
     title: "Fruit Freshness Scan",
@@ -75,13 +59,6 @@ const scanData = {
   },
 };
 
-// Helpers
-function showUploadScanner(show) {
-  const uploadScannerLine = document.getElementById("uploadScannerLine");
-  if (uploadScannerLine)
-    uploadScannerLine.style.display = show ? "block" : "none";
-}
-
 function stopWebcam() {
   if (localStream) {
     localStream.getTracks().forEach((track) => track.stop());
@@ -90,7 +67,6 @@ function stopWebcam() {
 
   if (webcam) webcam.srcObject = null;
   if (cameraArea) cameraArea.style.display = "none";
-  if (uploadArea) uploadArea.style.display = "flex";
 }
 
 function resetResultOnly() {
@@ -104,73 +80,12 @@ function resetResultOnly() {
 
   if (resultConfidence) resultConfidence.textContent = "--%";
 
-  if (categoryWarningBox) categoryWarningBox.style.display = "none";
-  if (categoryWarningMessage) categoryWarningMessage.textContent = "";
-
   if (resultMessage) {
     resultMessage.textContent = "Upload an image and click Analyze Image.";
   }
 
-  if (feedbackSection) feedbackSection.style.display = "none";
-  if (correctionSection) correctionSection.style.display = "none";
-  if (trainingStatus) trainingStatus.style.display = "none";
-
-  if (correctionLabelSelect) correctionLabelSelect.selectedIndex = 0;
-  if (correctionConditionSelect) correctionConditionSelect.selectedIndex = 0;
-
-  showUploadScanner(false);
-
-  lastImageUrl = null;
-  lastPredictedLabel = null;
-}
-
-function setLoadingState() {
-  if (scanNow) {
-    scanNow.disabled = true;
-    scanNow.textContent = "Analyzing...";
-  }
-
-  showUploadScanner(true);
-
-  if (foodName) foodName.textContent = "Detecting...";
-  if (resultDetectedCategory)
-    resultDetectedCategory.textContent = "Detecting...";
-
-  if (resultStatus) {
-    resultStatus.textContent = "Analyzing...";
-    resultStatus.className = "fresh";
-  }
-
-  if (resultConfidence) resultConfidence.textContent = "Processing...";
   if (categoryWarningBox) categoryWarningBox.style.display = "none";
   if (categoryWarningMessage) categoryWarningMessage.textContent = "";
-
-  if (resultMessage) {
-    resultMessage.textContent = "AI model is analyzing the uploaded image...";
-  }
-}
-
-function removeLoadingState() {
-  if (scanNow) {
-    scanNow.disabled = false;
-    scanNow.textContent = "Analyze Image";
-  }
-
-  showUploadScanner(false);
-}
-
-function showError(message) {
-  if (foodName) foodName.textContent = "Error";
-  if (resultDetectedCategory) resultDetectedCategory.textContent = "Error";
-
-  if (resultStatus) {
-    resultStatus.textContent = "Failed ❌";
-    resultStatus.className = "spoiled";
-  }
-
-  if (resultConfidence) resultConfidence.textContent = "--%";
-  if (categoryWarningBox) categoryWarningBox.style.display = "none";
-  if (resultMessage) resultMessage.textContent = message;
 }
 
 function changeScanType(type) {
@@ -187,8 +102,12 @@ function changeScanType(type) {
     resultSelectedCategory.textContent = scanData[type].category;
   }
 
-  stopWebcam();
   resetResultOnly();
+}
+
+function getSelectedType() {
+  const activeTab = document.querySelector(".tab-btn.active");
+  return activeTab ? activeTab.dataset.type : "fruit";
 }
 
 // Theme
@@ -208,18 +127,19 @@ if (themeToggle) {
 
     document.documentElement.setAttribute("data-theme", newTheme);
     localStorage.setItem("theme", newTheme);
+
     themeToggle.textContent = newTheme === "dark" ? "☀️" : "🌙";
   });
 }
 
-// Mobile Menu
+// Mobile menu
 if (menuBtn && navLinks) {
   menuBtn.addEventListener("click", () => {
     navLinks.classList.toggle("active");
   });
 }
 
-// Dropdown Menu
+// Dropdown
 if (scanBtn && scanMenu) {
   scanBtn.addEventListener("click", (e) => {
     e.preventDefault();
@@ -227,19 +147,20 @@ if (scanBtn && scanMenu) {
     scanMenu.classList.toggle("show");
   });
 
-  scanMenu.addEventListener("click", (e) => e.stopPropagation());
-
   document.addEventListener("click", () => {
     scanMenu.classList.remove("show");
   });
+
+  scanMenu.addEventListener("click", (e) => {
+    e.stopPropagation();
+  });
 }
 
-// Tab Change
+// Tabs
 tabButtons.forEach((btn) => {
   btn.addEventListener("click", () => {
     const type = btn.dataset.type;
     changeScanType(type);
-
     window.history.pushState(
       {},
       "",
@@ -248,7 +169,7 @@ tabButtons.forEach((btn) => {
   });
 });
 
-// Auto Select From URL
+// URL type
 const urlParams = new URLSearchParams(window.location.search);
 const selectedType = urlParams.get("type");
 
@@ -256,7 +177,7 @@ if (selectedType) {
   changeScanType(selectedType);
 }
 
-// Image Preview
+// Image preview
 if (foodImage && previewBox) {
   foodImage.addEventListener("change", () => {
     const file = foodImage.files[0];
@@ -275,28 +196,46 @@ if (foodImage && previewBox) {
   });
 }
 
-// Analyze Image
+// Analyze image
 if (scanNow) {
   scanNow.addEventListener("click", async () => {
-    if (!foodImage || !foodImage.files[0]) {
+    console.log("Analyze button clicked");
+
+    if (!foodImage || !foodImage.files || !foodImage.files[0]) {
       alert("Please upload an image first.");
       return;
     }
 
-    const activeTab = document.querySelector(".tab-btn.active");
-    const selectedCategory = activeTab ? activeTab.dataset.type : "fruit";
-
     const formData = new FormData();
     formData.append("file", foodImage.files[0]);
-    formData.append("selected_category", selectedCategory);
+    formData.append("selected_category", getSelectedType());
 
-    setLoadingState();
+    scanNow.disabled = true;
+    scanNow.textContent = "Analyzing...";
+
+    if (foodName) foodName.textContent = "Detecting...";
+    if (resultDetectedCategory)
+      resultDetectedCategory.textContent = "Detecting...";
+
+    if (resultStatus) {
+      resultStatus.textContent = "Analyzing...";
+      resultStatus.className = "fresh";
+    }
+
+    if (resultConfidence) resultConfidence.textContent = "Processing...";
+    if (resultMessage) {
+      resultMessage.textContent = "AI model is analyzing the uploaded image...";
+    }
 
     try {
+      console.log("Sending request to /predict");
+
       const response = await fetch("/predict", {
         method: "POST",
         body: formData,
       });
+
+      console.log("Response received:", response.status);
 
       const data = await response.json();
 
@@ -308,55 +247,68 @@ if (scanNow) {
 
       if (resultSelectedCategory) {
         resultSelectedCategory.textContent =
-          data.selected_category || "Waiting...";
+          data.selected_category || scanData[getSelectedType()].category;
       }
 
       if (resultDetectedCategory) {
         resultDetectedCategory.textContent =
-          data.detected_category || "Waiting...";
+          data.detected_category || "Detected";
       }
 
       if (resultStatus) {
-        const condition = data.condition || "Unknown";
-
         resultStatus.textContent =
-          condition === "Fresh" ? "Fresh ✅" : "Spoiled ⚠️";
+          data.condition === "Fresh" ? "Fresh ✅" : "Spoiled ⚠️";
 
-        resultStatus.className = condition === "Fresh" ? "fresh" : "spoiled";
+        resultStatus.className =
+          data.condition === "Fresh" ? "fresh" : "spoiled";
       }
 
       if (resultConfidence) {
-        resultConfidence.textContent = `${data.confidence || 0}%`;
+        resultConfidence.textContent = `${data.confidence}%`;
       }
 
       if (data.warning) {
         if (categoryWarningMessage) {
           categoryWarningMessage.textContent = data.warning;
         }
-        if (categoryWarningBox) categoryWarningBox.style.display = "flex";
+
+        if (categoryWarningBox) {
+          categoryWarningBox.style.display = "flex";
+        }
       } else {
-        if (categoryWarningBox) categoryWarningBox.style.display = "none";
+        if (categoryWarningBox) {
+          categoryWarningBox.style.display = "none";
+        }
       }
 
       if (resultMessage) {
         resultMessage.textContent = data.message || "Prediction completed.";
       }
-
-      lastImageUrl = data.image_url || null;
-      lastPredictedLabel = data.label || null;
-
-      if (feedbackSection && lastImageUrl && lastPredictedLabel) {
-        feedbackSection.style.display = "block";
-      }
     } catch (error) {
-      showError(error.message);
+      console.error("Prediction error:", error);
+
+      if (foodName) foodName.textContent = "Error";
+      if (resultDetectedCategory) resultDetectedCategory.textContent = "Error";
+
+      if (resultStatus) {
+        resultStatus.textContent = "Failed ❌";
+        resultStatus.className = "spoiled";
+      }
+
+      if (resultConfidence) resultConfidence.textContent = "--%";
+
+      if (resultMessage) {
+        resultMessage.textContent =
+          "Prediction failed. Please try again after a few seconds.";
+      }
     } finally {
-      removeLoadingState();
+      scanNow.disabled = false;
+      scanNow.textContent = "🔍 Analyze Image";
     }
   });
 }
 
-// Reset Scan
+// Reset scan
 if (resetScan) {
   resetScan.addEventListener("click", () => {
     stopWebcam();
@@ -375,38 +327,24 @@ if (resetScan) {
   });
 }
 
-// Live Camera
+// Live camera
 if (liveScan) {
   liveScan.addEventListener("click", async () => {
-    if (localStream) {
-      stopWebcam();
-      return;
-    }
-
-    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-      alert("Camera is not supported in this browser.");
-      return;
-    }
-
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({
+      localStream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: "environment" },
       });
 
-      localStream = stream;
-
-      if (webcam) webcam.srcObject = stream;
-      if (uploadArea) uploadArea.style.display = "none";
+      if (webcam) webcam.srcObject = localStream;
       if (cameraArea) cameraArea.style.display = "block";
-
-      resetResultOnly();
-    } catch (err) {
-      alert("Camera permission denied or camera not available: " + err.message);
+    } catch (error) {
+      alert("Camera access denied or not available.");
+      console.error(error);
     }
   });
 }
 
-// Capture Camera Image
+// Capture camera image
 if (captureImage) {
   captureImage.addEventListener("click", () => {
     if (!localStream || !webcam) return;
@@ -422,20 +360,19 @@ if (captureImage) {
       (blob) => {
         if (!blob) return;
 
-        const filename = "captured_food_" + Date.now() + ".jpg";
-        const capturedFile = new File([blob], filename, {
+        const file = new File([blob], "captured_food.jpg", {
           type: "image/jpeg",
         });
 
         const dt = new DataTransfer();
-        dt.items.add(capturedFile);
+        dt.items.add(file);
 
         if (foodImage) foodImage.files = dt.files;
 
         if (previewBox) {
           previewBox.innerHTML = `
-            <img src="${canvas.toDataURL("image/jpeg")}" alt="Captured Food Image">
-          `;
+          <img src="${canvas.toDataURL("image/jpeg")}" alt="Captured Food Image">
+        `;
         }
 
         stopWebcam();
@@ -446,161 +383,3 @@ if (captureImage) {
     );
   });
 }
-
-// Feedback: Yes
-if (feedbackYes) {
-  feedbackYes.addEventListener("click", async () => {
-    if (!lastImageUrl || !lastPredictedLabel) return;
-
-    if (feedbackSection) feedbackSection.style.display = "none";
-
-    if (trainingStatus) {
-      if (trainingStatusText) {
-        trainingStatusText.textContent = "Saving image to dataset...";
-      }
-      trainingStatus.style.display = "flex";
-    }
-
-    try {
-      const response = await fetch("/feedback", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          image_url: lastImageUrl,
-          label: lastPredictedLabel,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || "Failed to submit feedback.");
-      }
-
-      if (resultMessage) {
-        resultMessage.textContent =
-          data.message || "Thank you! Image saved successfully.";
-      }
-    } catch (err) {
-      alert("Error: " + err.message);
-    } finally {
-      if (trainingStatus) trainingStatus.style.display = "none";
-    }
-  });
-}
-
-// Feedback: No
-if (feedbackNo) {
-  feedbackNo.addEventListener("click", () => {
-    if (feedbackSection) feedbackSection.style.display = "none";
-    if (correctionSection) correctionSection.style.display = "block";
-  });
-}
-
-// Submit Correction
-if (submitCorrection) {
-  submitCorrection.addEventListener("click", async () => {
-    if (!lastImageUrl) return;
-
-    const itemVal = correctionLabelSelect ? correctionLabelSelect.value : "";
-    const condVal = correctionConditionSelect
-      ? correctionConditionSelect.value
-      : "";
-
-    if (!itemVal || !condVal) {
-      alert("Please select both correct item and condition.");
-      return;
-    }
-
-    const prefix = condVal === "fresh" ? "fresh" : "spoiled";
-    const targetLabel = prefix + itemVal;
-
-    submitCorrection.disabled = true;
-
-    if (trainingStatus) {
-      if (trainingStatusText) {
-        trainingStatusText.textContent = "Saving correction to dataset...";
-      }
-      trainingStatus.style.display = "flex";
-    }
-
-    try {
-      const response = await fetch("/feedback", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          image_url: lastImageUrl,
-          label: targetLabel,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || "Failed to save correction.");
-      }
-
-      if (correctionSection) correctionSection.style.display = "none";
-
-      if (resultMessage) {
-        resultMessage.textContent =
-          data.message ||
-          "Correction saved successfully. Retrain model later to improve prediction. ✅";
-      }
-    } catch (err) {
-      alert("Correction Error: " + err.message);
-    } finally {
-      submitCorrection.disabled = false;
-      if (trainingStatus) trainingStatus.style.display = "none";
-    }
-  });
-}
-
-// Sample Image Buttons
-const sampleButtons = document.querySelectorAll(".sample-btn");
-
-sampleButtons.forEach((btn) => {
-  btn.addEventListener("click", async () => {
-    const imageUrl = btn.getAttribute("data-image");
-    const itemType = btn.getAttribute("data-type");
-
-    if (!imageUrl || !itemType) return;
-
-    changeScanType(itemType);
-
-    window.history.pushState(
-      {},
-      "",
-      `${window.location.pathname}?type=${itemType}`,
-    );
-
-    if (previewBox) {
-      previewBox.innerHTML = `
-        <img src="${imageUrl}" alt="Sample Food Image">
-      `;
-    }
-
-    try {
-      const response = await fetch(imageUrl);
-      const blob = await response.blob();
-
-      const filename = imageUrl.substring(imageUrl.lastIndexOf("/") + 1);
-      const sampleFile = new File([blob], filename, {
-        type: blob.type || "image/jpeg",
-      });
-
-      const dt = new DataTransfer();
-      dt.items.add(sampleFile);
-
-      if (foodImage) foodImage.files = dt.files;
-      if (scanNow) scanNow.click();
-    } catch (err) {
-      console.error("Failed to load sample image:", err);
-      alert("Failed to load sample image.");
-    }
-  });
-});
