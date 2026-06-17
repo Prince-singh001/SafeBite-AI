@@ -59,11 +59,13 @@ def load_model_once():
             if not os.path.exists(TFLITE_PATH):
                 raise FileNotFoundError(f"TFLite model file not found: {TFLITE_PATH}")
             try:
-                import tflite_runtime.interpreter as tflite
-                interpreter = tflite.Interpreter(model_path=TFLITE_PATH)
-            except ImportError:
                 import tensorflow as tf
                 interpreter = tf.lite.Interpreter(model_path=TFLITE_PATH)
+                print("Using TensorFlow's built-in Lite Interpreter (TF version compatibility).")
+            except ImportError:
+                import tflite_runtime.interpreter as tflite
+                interpreter = tflite.Interpreter(model_path=TFLITE_PATH)
+                print("Using tflite_runtime Interpreter.")
             interpreter.allocate_tensors()
             print("TFLite model loaded successfully!")
             return interpreter
