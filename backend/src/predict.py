@@ -96,13 +96,13 @@ def format_label(label):
 
     if clean_label.startswith("fresh"):
         condition = "Fresh"
-        item = clean_label.replace("fresh", "", 1)
-    elif clean_label.startswith("spoile"):
-        condition = "Spoiled"
-        item = clean_label.replace("spoile", "", 1)
+        item = clean_label[5:]
     elif clean_label.startswith("spoiled"):
         condition = "Spoiled"
-        item = clean_label.replace("spoiled", "", 1)
+        item = clean_label[7:]
+    elif clean_label.startswith("spoile"):
+        condition = "Spoiled"
+        item = clean_label[6:]
     else:
         condition = "Unknown"
         item = clean_label
@@ -211,7 +211,8 @@ def predict_image(image_path):
             condition = "Fresh"
 
         confidence = 98.0
-        label = f"{condition.lower()}{detected_item.lower().replace(' ', '')}"
+        cond_prefix = "spoile" if condition == "Spoiled" else "fresh"
+        label = f"{cond_prefix}{detected_item.lower().replace(' ', '')}"
         dummy_top = [
             {
                 "label": label,
