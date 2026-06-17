@@ -315,7 +315,12 @@ if (scanNow) {
     }
 
     const formData = new FormData();
-    formData.append("file", foodImage.files[0]);
+    const file = foodImage.files[0];
+    let fileName = file.name || "image.jpg";
+    if (!fileName.includes(".")) {
+      fileName += ".jpg";
+    }
+    formData.append("file", file, fileName);
     formData.append("selected_category", getSelectedType());
 
     scanNow.disabled = true;
@@ -335,11 +340,11 @@ if (scanNow) {
       resultMessage.textContent = "AI model is analyzing the uploaded image...";
     }
 
-    // Abort controller for 20-second timeout limit
+    // Abort controller for 90-second timeout limit (essential for Render wake-up times)
     const controller = new AbortController();
     const timeoutId = setTimeout(() => {
       controller.abort();
-    }, 20000);
+    }, 90000);
 
     startProgressAnimation();
 
@@ -458,8 +463,8 @@ if (scanNow) {
       if (error.name === "AbortError") {
         if (resultMessage) {
           resultMessage.innerHTML = `
-            <span style="color:var(--danger);font-weight:bold;">Request timed out (20s).</span><br>
-            The Render backend is waking up from inactivity. This first request takes up to a minute.<br>
+            <span style="color:var(--danger);font-weight:bold;">Request timed out (90s).</span><br>
+            The Render backend did not respond in time. It might be taking longer to wake up from inactivity.<br>
             <strong>Please click "Analyze Image" again to retry.</strong>
           `;
         }
