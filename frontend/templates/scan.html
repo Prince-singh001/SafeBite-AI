@@ -17,24 +17,14 @@
     {% include 'components/navbar.html' %}
 
     <!-- Hero -->
-
     <section class="scan-hero">
-      <div class="hero-text">
+      <div class="hero-text-centered">
         <span class="badge">AI Powered Food Detection</span>
-
         <h1>Detect Food Freshness Using Deep Learning</h1>
-
         <p>
-          Upload a fruit, vegetable or food image. SafeBite AI will identify the
-          food item, freshness condition and confidence score.
+          Upload a fruit, vegetable, or food image, or start a live webcam scan. 
+          SafeBite AI will instantly identify the item, freshness condition, and compile a match probability breakdown.
         </p>
-      </div>
-
-      <div class="hero-img">
-        <img
-          src="{{ url_for('static', filename='image/home_hero_scan.png') }}"
-          alt="Food Scanner"
-        />
       </div>
     </section>
 
@@ -212,6 +202,8 @@
                 <option value="potato">Potato</option>
                 <option value="cucumber">Cucumber</option>
                 <option value="bittergroud">Bitter Gourd</option>
+                <option value="onion">Onion</option>
+                <option value="carrot">Carrot</option>
               </optgroup>
               <optgroup label="Food">
                 <option value="pizza">Pizza</option>

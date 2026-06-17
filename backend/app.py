@@ -1,8 +1,15 @@
 import os
+import sys
 import shutil
 from datetime import datetime
 from flask import Flask, request, jsonify, render_template
 from werkzeug.utils import secure_filename
+
+# Ensure the backend directory is in the Python search path for importing src
+backend_dir = os.path.dirname(os.path.abspath(__file__))
+if backend_dir not in sys.path:
+    sys.path.append(backend_dir)
+
 from src.predict import predict_image
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -137,7 +144,7 @@ def predict():
         item_lower = result["item"].lower().strip()
         if item_lower in ["apple", "apples", "banana", "orange", "oranges", "mango"]:
             detected_category = "Fruit"
-        elif item_lower in ["tomato", "potato", "cucumber", "bitter gourd", "bittergourd", "bittergroud"]:
+        elif item_lower in ["tomato", "potato", "cucumber", "bitter gourd", "bittergourd", "bittergroud", "onion", "onions", "carrot", "carrots"]:
             detected_category = "Vegetable"
         elif item_lower in ["pizza", "burger", "sandwich", "pasta", "rice", "bread"]:
             detected_category = "Food"

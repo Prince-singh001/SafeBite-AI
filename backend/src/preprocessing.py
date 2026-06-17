@@ -27,18 +27,27 @@ def get_data_generators():
         rescale=1.0 / 255
     )
 
+    VALID_CLASSES = [
+        "freshapples", "freshbanana", "freshbittergroud", "freshcucumber",
+        "freshoranges", "freshpotato", "freshtomato", "freshonion", "freshcarrot",
+        "spoileapples", "spoilebanana", "spoilebittergroud", "spoilecucumber",
+        "spoileoranges", "spoilepotato", "spoiletomato", "spoileonion", "spoilecarrot"
+    ]
+
     train_generator = train_datagen.flow_from_directory(
         TRAIN_PATH,
         target_size=(IMG_SIZE, IMG_SIZE),
         batch_size=BATCH_SIZE,
-        class_mode='categorical'
+        class_mode='categorical',
+        classes=VALID_CLASSES
     )
 
     validation_generator = validation_datagen.flow_from_directory(
         VALIDATION_PATH,
         target_size=(IMG_SIZE, IMG_SIZE),
         batch_size=BATCH_SIZE,
-        class_mode='categorical'
+        class_mode='categorical',
+        classes=VALID_CLASSES
     )
 
     return train_generator, validation_generator

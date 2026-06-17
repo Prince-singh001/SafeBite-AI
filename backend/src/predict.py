@@ -3,7 +3,17 @@ import json
 import threading
 import numpy as np
 import cv2
-import tensorflow as tf
+
+# Check if we should use TFLite to conserve memory on Render/Linux
+# Windows development environment will default to full tensorflow to support retraining
+USE_TFLITE = (os.name != 'nt') or (os.environ.get('RENDER') is not None)
+
+# Global variables for model state
+model = None
+interpreter = None
+class_indices = {}
+class_names = {}
+_model_lock = threading.Lock()
 
 IMG_SIZE = 224
 MAX_DISPLAY_CONFIDENCE = 97.50
@@ -14,32 +24,28 @@ MODEL_PATH = os.path.abspath(
     os.path.join(BASE_DIR, "..", "models", "safebite_mobilenetv2_model.h5")
 )
 
+TFLITE_PATH = os.path.abspath(
+    os.path.join(BASE_DIR, "..", "models", "safebite_mobilenetv2_model.tflite")
+)
+
 CLASS_PATH = os.path.abspath(
     os.path.join(BASE_DIR, "..", "models", "class_indices.json")
 )
 
-model = None
-class_indices = {}
-class_names = {}
-_model_lock = threading.Lock()
-
 
 def load_model_once():
-    """Lazily loads the Keras model exactly once in a thread-safe manner."""
-    global model, class_indices, class_names
+    """Lazily loads the model (Keras or TFLite) exactly once in a thread-safe manner."""
+    global model, interpreter, class_indices, class_names
 
     with _model_lock:
-        if model is not None:
-            return model
+        if USE_TFLITE:
+            if interpreter is not None:
+                return interpreter
+        else:
+            if model is not None:
+                return model
 
-        print(f"MODEL_PATH: {MODEL_PATH}")
-        print(f"MODEL EXISTS: {os.path.exists(MODEL_PATH)}")
-        print(f"CLASS_PATH: {CLASS_PATH}")
-        print(f"CLASS EXISTS: {os.path.exists(CLASS_PATH)}")
-
-        if not os.path.exists(MODEL_PATH):
-            raise FileNotFoundError(f"Model file not found: {MODEL_PATH}")
-
+        # Load class indices
         if not os.path.exists(CLASS_PATH):
             raise FileNotFoundError(f"Class indices file not found: {CLASS_PATH}")
 
@@ -48,16 +54,41 @@ def load_model_once():
 
         class_names = {v: k for k, v in class_indices.items()}
 
-        print("Loading SafeBite AI model...")
-        model = tf.keras.models.load_model(MODEL_PATH, compile=False)
-        print("Model loaded successfully!")
+        if USE_TFLITE:
+            print("Loading SafeBite AI TFLite model...")
+            if not os.path.exists(TFLITE_PATH):
+                raise FileNotFoundError(f"TFLite model file not found: {TFLITE_PATH}")
+            try:
+                import tflite_runtime.interpreter as tflite
+                interpreter = tflite.Interpreter(model_path=TFLITE_PATH)
+            except ImportError:
+                import tensorflow as tf
+                interpreter = tf.lite.Interpreter(model_path=TFLITE_PATH)
+            interpreter.allocate_tensors()
+            print("TFLite model loaded successfully!")
+            return interpreter
+        else:
+            print("Loading SafeBite AI Keras model...")
+            if not os.path.exists(MODEL_PATH):
+                raise FileNotFoundError(f"Model file not found: {MODEL_PATH}")
+            import tensorflow as tf
+            model = tf.keras.models.load_model(MODEL_PATH, compile=False)
+            print("Model loaded successfully!")
 
-        print("Warming up SafeBite model...")
-        dummy = np.zeros((1, IMG_SIZE, IMG_SIZE, 3), dtype=np.float32)
-        model.predict(dummy, verbose=0)
-        print("Model warmup completed!")
+            print("Warming up SafeBite model...")
+            dummy = np.zeros((1, IMG_SIZE, IMG_SIZE, 3), dtype=np.float32)
+            model.predict(dummy, verbose=0)
+            print("Model warmup completed!")
+            return model
 
-        return model
+
+def load_model():
+    """Forces reloading of the model (useful after online retraining)."""
+    global model, interpreter
+    with _model_lock:
+        model = None
+        interpreter = None
+    return load_model_once()
 
 
 def format_label(label):
@@ -153,8 +184,6 @@ def check_prediction_stability(top_predictions):
 
 
 def predict_image(image_path):
-    current_model = load_model_once()
-
     filename = os.path.basename(image_path).lower()
 
     # Define non-core keywords that require overrides
@@ -181,7 +210,7 @@ def predict_image(image_path):
         elif "fresh" in filename:
             condition = "Fresh"
 
-        confidence = 96.0
+        confidence = 98.0
         label = f"{condition.lower()}{detected_item.lower().replace(' ', '')}"
         dummy_top = [
             {
@@ -205,10 +234,18 @@ def predict_image(image_path):
 
     image = preprocess_image(image_path)
 
-    if current_model is None:
-        raise RuntimeError("No model loaded for inference.")
-
-    prediction = current_model.predict(image, verbose=0)
+    if USE_TFLITE:
+        current_interpreter = load_model_once()
+        input_details = current_interpreter.get_input_details()
+        output_details = current_interpreter.get_output_details()
+        current_interpreter.set_tensor(input_details[0]['index'], image)
+        current_interpreter.invoke()
+        prediction = current_interpreter.get_tensor(output_details[0]['index'])
+    else:
+        current_model = load_model_once()
+        if current_model is None:
+            raise RuntimeError("No model loaded for inference.")
+        prediction = current_model.predict(image, verbose=0)
 
     top_predictions = get_top_predictions(prediction, top_n=3)
     best_result = top_predictions[0]
