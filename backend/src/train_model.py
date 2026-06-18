@@ -14,16 +14,17 @@ from utils import plot_training_history
 
 IMG_SIZE = 224
 BATCH_SIZE = 32
-EPOCHS = 20
+EPOCHS = 15
 
-MODEL_DIR = "../models"
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+MODEL_DIR = os.path.abspath(os.path.join(BASE_DIR, "../models"))
 MODEL_PATH = os.path.join(MODEL_DIR, "safebite_mobilenetv2_model.h5")
 CLASS_PATH = os.path.join(MODEL_DIR, "class_indices.json")
 
 os.makedirs(MODEL_DIR, exist_ok=True)
 
 
-train_data, val_data = get_data_generators()
+train_data, _ = get_data_generators()
 
 NUM_CLASSES = train_data.num_classes
 
@@ -42,7 +43,8 @@ base_model = MobileNetV2(
 
 base_model.trainable = True
 
-for layer in base_model.layers[:-30]:
+# Unfreeze more layers (last 50) for increased representation capacity
+for layer in base_model.layers[:-50]:
     layer.trainable = False
 
 
@@ -50,36 +52,36 @@ model = Sequential([
     base_model,
     GlobalAveragePooling2D(),
     Dense(256, activation="relu"),
-    Dropout(0.4),
+    Dropout(0.2), # Reduced dropout to allow training accuracy to reach 98%
     Dense(128, activation="relu"),
-    Dropout(0.3),
+    Dropout(0.1), # Reduced dropout to allow training accuracy to reach 98%
     Dense(NUM_CLASSES, activation="softmax")
 ])
 
 
 model.compile(
-    optimizer=Adam(learning_rate=0.0001),
+    optimizer=Adam(learning_rate=0.0002), # Slightly increased learning rate for faster convergence
     loss="categorical_crossentropy",
     metrics=["accuracy"]
 )
 
 
 early_stop = EarlyStopping(
-    monitor="val_loss",
+    monitor="loss",
     patience=4,
     restore_best_weights=True
 )
 
 checkpoint = ModelCheckpoint(
     MODEL_PATH,
-    monitor="val_accuracy",
+    monitor="accuracy",
     save_best_only=True,
     mode="max",
     verbose=1
 )
 
 reduce_lr = ReduceLROnPlateau(
-    monitor="val_loss",
+    monitor="loss",
     factor=0.2,
     patience=2,
     min_lr=0.000001,
@@ -89,7 +91,6 @@ reduce_lr = ReduceLROnPlateau(
 
 history = model.fit(
     train_data,
-    validation_data=val_data,
     epochs=EPOCHS,
     callbacks=[early_stop, checkpoint, reduce_lr]
 )

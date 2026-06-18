@@ -1,25 +1,26 @@
+import os
+import sys
 from tensorflow.keras.models import load_model
-from tensorflow.keras.preprocessing.image import ImageDataGenerator
 
-IMG_SIZE = 224
-BATCH_SIZE = 32
+# Ensure we can import from preprocessing
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+if BASE_DIR not in sys.path:
+    sys.path.append(BASE_DIR)
 
-# Load model
-model = load_model("../models/mobilenetv2_model.h5")
+from preprocessing import get_data_generators
 
-# Test data
-test_datagen = ImageDataGenerator(
-    rescale=1./255
-)
+MODEL_PATH = os.path.abspath(os.path.join(BASE_DIR, "../models/safebite_mobilenetv2_model.h5"))
 
-test_generator = test_datagen.flow_from_directory(
-    "../dataset/test",
-    target_size=(IMG_SIZE, IMG_SIZE),
-    batch_size=BATCH_SIZE,
-    class_mode='binary'
-)
+print(f"Loading model from {MODEL_PATH}...")
+if not os.path.exists(MODEL_PATH):
+    raise FileNotFoundError(f"Model file not found: {MODEL_PATH}")
 
-# Evaluate model
+model = load_model(MODEL_PATH)
+
+print("Loading test data...")
+_, test_generator = get_data_generators()
+
+print("Evaluating model...")
 loss, accuracy = model.evaluate(test_generator)
 
 print("\nTest Accuracy:", accuracy)

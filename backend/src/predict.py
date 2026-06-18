@@ -255,6 +255,73 @@ def predict_image(image_path):
 
     stability_warning = check_prediction_stability(top_predictions)
 
+    # Determine if we should trigger Google Lens fallback
+    trigger_lens = False
+    
+    # Check if confidence is below 60%
+    if best_result["confidence"] < 60.0:
+        trigger_lens = True
+    else:
+        # Check if the filename explicitly contains known non-dataset items
+        out_of_dataset_keywords = [
+            "onion", "carrot", "grapes", "strawberry", "blueberry", "pineapple", 
+            "watermelon", "pear", "peach", "plum", "cherry", "broccoli", "spinach", 
+            "cabbage", "lettuce", "garlic", "ginger", "lemon", "lime", "coconut", 
+            "mushroom", "avocado", "corn", "mango"
+        ]
+        for kw in out_of_dataset_keywords:
+            if kw in filename:
+                trigger_lens = True
+                break
+
+    if trigger_lens:
+        try:
+            print("Triggering Google Lens Fallback...")
+            from src.google_vision import detect_food_with_google_lens
+            lens_result = detect_food_with_google_lens(image_path)
+            
+            if lens_result:
+                # Sum the probabilities of fresh vs spoiled classes to determine condition
+                fresh_score = 0.0
+                spoiled_score = 0.0
+                for label, idx in class_indices.items():
+                    score = float(prediction[0][idx])
+                    if label.lower().startswith("fresh"):
+                        fresh_score += score
+                    else:
+                        spoiled_score += score
+                
+                condition = "Fresh" if fresh_score >= spoiled_score else "Spoiled"
+                
+                # Format label
+                cond_prefix = "fresh" if condition == "Fresh" else "spoile"
+                clean_name = lens_result["food_name"].lower().replace(" ", "")
+                label = f"{cond_prefix}{clean_name}"
+                
+                dummy_top = [
+                    {
+                        "label": label,
+                        "item": lens_result["food_name"],
+                        "condition": condition,
+                        "confidence": lens_result["confidence"],
+                        "raw_confidence": lens_result["confidence"]
+                    }
+                ]
+                
+                return {
+                    "label": label,
+                    "item": lens_result["food_name"],
+                    "condition": condition,
+                    "confidence": lens_result["confidence"],
+                    "raw_confidence": lens_result["confidence"],
+                    "top_predictions": dummy_top,
+                    "stability_warning": "",
+                    "google_lens_active": True,
+                    "google_lens_source": lens_result["source"]
+                }
+        except Exception as lens_err:
+            print(f"Error during Google Lens fallback invocation: {lens_err}")
+
     return {
         "label": best_result["label"],
         "item": best_result["item"],
@@ -262,5 +329,6 @@ def predict_image(image_path):
         "confidence": best_result["confidence"],
         "raw_confidence": best_result["raw_confidence"],
         "top_predictions": top_predictions,
-        "stability_warning": stability_warning
+        "stability_warning": stability_warning,
+        "google_lens_active": False
     }

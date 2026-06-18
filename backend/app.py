@@ -140,13 +140,17 @@ def predict():
         else:
             selected_category = selected_cat_raw.capitalize()
 
-        # Auto-detect category from predicted item name
+        # Auto-detect category from predicted item name (supporting Google Vision API labels)
         item_lower = result["item"].lower().strip()
-        if item_lower in ["apple", "apples", "banana", "orange", "oranges", "mango"]:
+        fruits = ["apple", "apples", "banana", "bananas", "orange", "oranges", "mango", "mangoes", "grapes", "grape", "strawberry", "blueberry", "pineapple", "watermelon", "pear", "peach", "plum", "cherry", "coconut", "avocado"]
+        vegetables = ["tomato", "tomatoes", "potato", "potatoes", "cucumber", "cucumbers", "bitter gourd", "bittergourd", "bittergroud", "onion", "onions", "carrot", "carrots", "broccoli", "spinach", "cabbage", "lettuce", "garlic", "ginger", "lemon", "lime", "mushroom", "radish", "turnip", "pumpkin", "squash", "corn", "peas", "beans"]
+        foods = ["pizza", "burger", "sandwich", "pasta", "rice", "bread", "cheese", "egg", "meat", "chicken", "fish", "salad", "soup", "curry", "sushi"]
+
+        if any(f in item_lower for f in fruits):
             detected_category = "Fruit"
-        elif item_lower in ["tomato", "potato", "cucumber", "bitter gourd", "bittergourd", "bittergroud", "onion", "onions", "carrot", "carrots"]:
+        elif any(v in item_lower for v in vegetables):
             detected_category = "Vegetable"
-        elif item_lower in ["pizza", "burger", "sandwich", "pasta", "rice", "bread"]:
+        elif any(fo in item_lower for fo in foods):
             detected_category = "Food"
         else:
             detected_category = "Unknown"
@@ -157,6 +161,8 @@ def predict():
             warning = f"The uploaded image belongs to the {detected_category} category, but you selected {selected_category} Scan."
 
         stability_warning = result.get("stability_warning", "")
+        google_lens_active = result.get("google_lens_active", False)
+        google_lens_source = result.get("google_lens_source", "")
 
         scan_record = {
             "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
@@ -167,7 +173,9 @@ def predict():
             "detected_category": detected_category,
             "image_url": f"/static/uploads/{filename}",
             "warning": warning,
-            "stability_warning": stability_warning
+            "stability_warning": stability_warning,
+            "google_lens_active": google_lens_active,
+            "google_lens_source": google_lens_source
         }
         save_to_history(scan_record)
 
@@ -182,7 +190,9 @@ def predict():
             "detected_category": detected_category,
             "warning": warning,
             "stability_warning": stability_warning,
-            "top_predictions": result.get("top_predictions", [])
+            "top_predictions": result.get("top_predictions", []),
+            "google_lens_active": google_lens_active,
+            "google_lens_source": google_lens_source
         })
 
     except Exception as e:
