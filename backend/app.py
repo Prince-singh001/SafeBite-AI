@@ -11,6 +11,7 @@ if backend_dir not in sys.path:
     sys.path.append(backend_dir)
 
 from src.predict import predict_image
+from src.chatbot import get_chatbot_response
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -274,6 +275,21 @@ def feedback():
         "trained_real": trained_real,
         "message": f"Feedback submitted successfully! Image saved and model retrained on {label}."
     })
+
+
+@app.route("/chat", methods=["POST"])
+def chat():
+    data = request.json or {}
+    message = data.get("message", "").strip()
+
+    if not message:
+        return jsonify({"error": "Message is required"}), 400
+
+    try:
+        response = get_chatbot_response(message)
+        return jsonify({"response": response})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
 if __name__ == "__main__":

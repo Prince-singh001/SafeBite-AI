@@ -1,5 +1,38 @@
 [
     {
+        "timestamp": "2026-06-18 21:40:26",
+        "food_name": "Apple",
+        "condition": "Fresh",
+        "confidence": 98.0,
+        "selected_category": "Fruit",
+        "detected_category": "Fruit",
+        "image_url": "/static/uploads/20260618214026_20260618114121_a_f016.png",
+        "warning": "",
+        "stability_warning": ""
+    },
+    {
+        "timestamp": "2026-06-18 21:40:16",
+        "food_name": "Apple",
+        "condition": "Fresh",
+        "confidence": 98.0,
+        "selected_category": "Fruit",
+        "detected_category": "Fruit",
+        "image_url": "/static/uploads/20260618214016_20260618114121_a_f016.png",
+        "warning": "",
+        "stability_warning": ""
+    },
+    {
+        "timestamp": "2026-06-18 21:40:13",
+        "food_name": "Apple",
+        "condition": "Fresh",
+        "confidence": 98.0,
+        "selected_category": "Fruit",
+        "detected_category": "Fruit",
+        "image_url": "/static/uploads/20260618214013_20260618114121_a_f016.png",
+        "warning": "",
+        "stability_warning": ""
+    },
+    {
         "timestamp": "2026-06-18 15:16:35",
         "food_name": "Banana",
         "condition": "Fresh",
