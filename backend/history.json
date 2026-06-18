@@ -1,5 +1,16 @@
 [
     {
+        "timestamp": "2026-06-18 11:42:09",
+        "food_name": "Banana",
+        "condition": "Fresh",
+        "confidence": 14.56,
+        "selected_category": "Fruit",
+        "detected_category": "Fruit",
+        "image_url": "/static/uploads/20260618114121_a_f016.png",
+        "warning": "",
+        "stability_warning": "Low confidence prediction. Please try a clearer image."
+    },
+    {
         "timestamp": "2026-06-09 23:06:22",
         "food_name": "Oranges",
         "condition": "Fresh",
