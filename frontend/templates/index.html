@@ -5,7 +5,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>SafeBite AI | Smart Food Freshness Detection</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🥗</text></svg>">
+  <link rel="icon"
+    href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🥗</text></svg>">
 
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
 </head>
@@ -53,7 +54,8 @@
           <p>Live AI Preview</p>
         </div>
 
-        <img src="{{ url_for('static', filename='image/home_hero_scan.png') }}" alt="Food freshness scanner" class="scanner-img" />
+        <img src="{{ url_for('static', filename='image/home_hero_scan.png') }}" alt="Food freshness scanner"
+          class="scanner-img" />
 
         <h2>Smart Food Scanner</h2>
         <p>
@@ -72,7 +74,7 @@
           </div>
           <div>
             <span>Confidence</span>
-            <strong>96.4%</strong>
+            <strong>99.5%</strong>
           </div>
         </div>
       </div>
@@ -88,24 +90,21 @@
 
     <div class="category-grid">
       <a href="{{ url_for('scan') }}?type=fruit" class="category-card">
-        <img src="{{ url_for('static', filename='image/fruit_category.png') }}"
-          alt="Fruits" />
+        <img src="{{ url_for('static', filename='image/fruit_category.png') }}" alt="Fruits" />
         <div class="cat-icon">🍎</div>
         <h3>Fruit Scan</h3>
         <p>Detect freshness of apple, banana, orange and more fruits.</p>
       </a>
 
       <a href="{{ url_for('scan') }}?type=vegetable" class="category-card">
-        <img src="{{ url_for('static', filename='image/vegetable_category.png') }}"
-          alt="Vegetables" />
+        <img src="{{ url_for('static', filename='image/vegetable_category.png') }}" alt="Vegetables" />
         <div class="cat-icon">🥦</div>
         <h3>Vegetable Scan</h3>
         <p>Analyze vegetables like tomato, potato and cucumber.</p>
       </a>
 
       <a href="{{ url_for('scan') }}?type=food" class="category-card">
-        <img src="{{ url_for('static', filename='image/food_category.png') }}"
-          alt="Food" />
+        <img src="{{ url_for('static', filename='image/food_category.png') }}" alt="Food" />
         <div class="cat-icon">🍱</div>
         <h3>Food Scan</h3>
         <p>Scan food item images and check freshness condition.</p>

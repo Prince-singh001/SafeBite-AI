@@ -2,7 +2,7 @@ import os
 import sys
 import shutil
 from datetime import datetime
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify, render_template, redirect, url_for
 from werkzeug.utils import secure_filename
 
 # Ensure the backend directory is in the Python search path for importing src
@@ -85,9 +85,17 @@ def contact():
     return render_template("contact.html")
 
 
+@app.context_processor
+def inject_history_status():
+    history_data = load_history()
+    return {"has_history": len(history_data) > 0}
+
+
 @app.route("/history")
 def history():
     history_data = load_history()
+    if not history_data:
+        return redirect(url_for("home"))
     return render_template("history.html", history=history_data)
 
 
@@ -275,6 +283,11 @@ def feedback():
         "trained_real": trained_real,
         "message": f"Feedback submitted successfully! Image saved and model retrained on {label}."
     })
+
+
+@app.route("/chatbot")
+def chatbot_page():
+    return render_template("chatbot.html")
 
 
 @app.route("/chat", methods=["POST"])
