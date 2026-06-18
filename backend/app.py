@@ -10,7 +10,7 @@ backend_dir = os.path.dirname(os.path.abspath(__file__))
 if backend_dir not in sys.path:
     sys.path.append(backend_dir)
 
-from src.predict import predict_image
+from src.predict import predict_image, load_model_once
 from src.chatbot import get_chatbot_response
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -25,6 +25,21 @@ UPLOAD_FOLDER = os.path.join(STATIC_FOLDER, "uploads")
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
+
+import threading
+
+
+def preload_model_async():
+    try:
+        print("Preloading SafeBite AI model in background thread...")
+        load_model_once()
+        print("SafeBite AI model preloading and warm-up completed successfully!")
+    except Exception as e:
+        print(f"Failed to preload model in background: {e}")
+
+
+# Start background thread for preloading the model to make the first prediction instant
+threading.Thread(target=preload_model_async, daemon=True).start()
 
 ALLOWED_EXTENSIONS = {"jpg", "jpeg", "png", "webp"}
 
