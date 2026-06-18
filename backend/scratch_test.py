@@ -18,8 +18,9 @@ if os.path.exists(img_path):
         print("Raw prediction array:", pred)
         print("Prediction sum:", np.sum(pred))
         print("Class scores:")
+        import src.predict as pred_mod
         for idx, score in enumerate(pred[0]):
-            print(f"  {class_names[idx]}: {score*100:.2f}%")
+            print(f"  {pred_mod.class_names[idx]}: {score*100:.2f}%")
         
         res = predict_image(img_path)
         print("Result from predict_image:", res)

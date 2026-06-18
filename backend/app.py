@@ -140,7 +140,7 @@ def predict():
         else:
             selected_category = selected_cat_raw.capitalize()
 
-        # Auto-detect category from predicted item name (supporting Google Vision API labels)
+        # Auto-detect category from predicted item name
         item_lower = result["item"].lower().strip()
         fruits = ["apple", "apples", "banana", "bananas", "orange", "oranges", "mango", "mangoes", "grapes", "grape", "strawberry", "blueberry", "pineapple", "watermelon", "pear", "peach", "plum", "cherry", "coconut", "avocado"]
         vegetables = ["tomato", "tomatoes", "potato", "potatoes", "cucumber", "cucumbers", "bitter gourd", "bittergourd", "bittergroud", "onion", "onions", "carrot", "carrots", "broccoli", "spinach", "cabbage", "lettuce", "garlic", "ginger", "lemon", "lime", "mushroom", "radish", "turnip", "pumpkin", "squash", "corn", "peas", "beans"]
@@ -161,8 +161,6 @@ def predict():
             warning = f"The uploaded image belongs to the {detected_category} category, but you selected {selected_category} Scan."
 
         stability_warning = result.get("stability_warning", "")
-        google_lens_active = result.get("google_lens_active", False)
-        google_lens_source = result.get("google_lens_source", "")
 
         scan_record = {
             "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
@@ -173,9 +171,7 @@ def predict():
             "detected_category": detected_category,
             "image_url": f"/static/uploads/{filename}",
             "warning": warning,
-            "stability_warning": stability_warning,
-            "google_lens_active": google_lens_active,
-            "google_lens_source": google_lens_source
+            "stability_warning": stability_warning
         }
         save_to_history(scan_record)
 
@@ -190,9 +186,7 @@ def predict():
             "detected_category": detected_category,
             "warning": warning,
             "stability_warning": stability_warning,
-            "top_predictions": result.get("top_predictions", []),
-            "google_lens_active": google_lens_active,
-            "google_lens_source": google_lens_source
+            "top_predictions": result.get("top_predictions", [])
         })
 
     except Exception as e:

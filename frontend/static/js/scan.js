@@ -98,14 +98,6 @@ function resetResultOnly() {
   if (foodName) foodName.textContent = "Waiting...";
   if (resultDetectedCategory) resultDetectedCategory.textContent = "Waiting...";
 
-  const scanMethodRow = document.getElementById("scanMethodRow");
-  const resultScanMethod = document.getElementById("resultScanMethod");
-  if (scanMethodRow) scanMethodRow.style.display = "none";
-  if (resultScanMethod) {
-    resultScanMethod.textContent = "SafeBite AI Model";
-    resultScanMethod.style.color = "var(--primary)";
-  }
-
   if (resultStatus) {
     resultStatus.textContent = "Waiting...";
     resultStatus.className = "fresh";
@@ -381,25 +373,7 @@ if (scanNow) {
       currentPredictedLabel = data.label || "";
 
       if (foodName) {
-        if (data.google_lens_active) {
-          foodName.innerHTML = `${data.food_name || "Unknown"} <span style="font-size: 0.75rem; background: #a855f7; color: white; padding: 2px 6px; border-radius: 4px; margin-left: 8px; vertical-align: middle; font-weight: normal;">Google Lens</span>`;
-        } else {
-          foodName.textContent = data.food_name || "Unknown";
-        }
-      }
-
-      const scanMethodRow = document.getElementById("scanMethodRow");
-      const resultScanMethod = document.getElementById("resultScanMethod");
-      if (scanMethodRow && resultScanMethod) {
-        if (data.google_lens_active) {
-          resultScanMethod.textContent = "Google Lens Fallback 🌐";
-          resultScanMethod.style.color = "#a855f7"; // purple for distinction
-          scanMethodRow.style.display = "flex";
-        } else {
-          resultScanMethod.textContent = "SafeBite AI Model 🧠";
-          resultScanMethod.style.color = "var(--primary)";
-          scanMethodRow.style.display = "flex";
-        }
+        foodName.textContent = data.food_name || "Unknown";
       }
 
       if (resultSelectedCategory) {
